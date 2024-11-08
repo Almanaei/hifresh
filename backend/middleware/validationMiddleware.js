@@ -18,8 +18,16 @@ const validateUserRegistration = (req, res, next) => {
     });
   }
 
-  // Email validation (optional)
-  if (email && !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+  // Email validation (now mandatory)
+  if (!email) {
+    return res.status(400).json({
+      message: 'Email is required'
+    });
+  }
+
+  // Email format validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
     return res.status(400).json({
       message: 'Invalid email format'
     });
