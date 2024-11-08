@@ -34,6 +34,10 @@ const analyticsRoutes = require('./routes/analyticsRoutes');
 
 
 
+const certificateRoutes = require('./routes/certificateRoutes');
+
+
+
 const app = express();
 
 
@@ -78,7 +82,9 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
 
         'Content-Type': 'application/pdf',
 
-        'Content-Disposition': 'inline; filename=' + path.basename(filePath)
+        'Content-Disposition': 'inline',
+
+        'Cache-Control': 'public, max-age=0'
 
       });
 
@@ -110,6 +116,10 @@ app.use('/api/analytics', analyticsRoutes);
 
 
 
+app.use('/api/certificates', certificateRoutes);
+
+
+
 app.use((error, req, res, next) => {
 
   console.error('Error:', error);
@@ -121,6 +131,14 @@ app.use((error, req, res, next) => {
     stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
 
   });
+
+});
+
+
+
+app.use((req, res) => {
+
+  res.status(404).json({ message: 'Not Found' });
 
 });
 

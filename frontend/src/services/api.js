@@ -156,6 +156,38 @@ export const api = {
     });
     return handleResponse(response);
   },
+
+  generateCertificate: async (bookingId) => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/certificates/${bookingId}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    return handleResponse(response);
+  },
+
+  getCertificates: async () => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/certificates`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    return handleResponse(response);
+  },
+
+  getAllBookings: async () => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/bookings/all`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    return handleResponse(response);
+  },
 };
 
 const handleResponse = async (response) => {

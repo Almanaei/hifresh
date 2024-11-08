@@ -71,9 +71,13 @@ function BookingList() {
   };
 
   const handleEditChange = (e) => {
+    const value = e.target.type === 'datetime-local' && e.target.value
+      ? new Date(e.target.value).toISOString()
+      : e.target.value;
+      
     setEditingBooking({
       ...editingBooking,
-      [e.target.name]: e.target.value,
+      [e.target.name]: value,
     });
   };
 
@@ -350,6 +354,42 @@ function BookingList() {
                           <option value="cancelled">Cancelled</option>
                         </select>
                       </div>
+                      <div className="form-group">
+                        <label htmlFor="visit_date">Visit Date:</label>
+                        <input
+                          type="datetime-local"
+                          id="visit_date"
+                          name="visit_date"
+                          value={editingBooking.visit_date ? new Date(editingBooking.visit_date).toISOString().slice(0, 16) : ''}
+                          onChange={handleEditChange}
+                          min={editingBooking.booking_date ? new Date(editingBooking.booking_date).toISOString().slice(0, 16) : ''}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="mobile">Mobile:</label>
+                        <input
+                          type="tel"
+                          id="mobile"
+                          name="mobile"
+                          value={editingBooking.mobile || ''}
+                          onChange={handleEditChange}
+                          placeholder="Enter mobile number"
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="email">Email:</label>
+                        <input
+                          type="email"
+                          id="email"
+                          name="email"
+                          value={editingBooking.email || ''}
+                          onChange={handleEditChange}
+                          placeholder="Enter email address"
+                        />
+                      </div>
+
                       <div className="button-group">
                         <button type="submit">Save</button>
                         <button 
@@ -470,6 +510,24 @@ function BookingList() {
                 <label>Last Updated:</label>
                 <p>{formatDate(viewingBooking.updated_at)}</p>
               </div>
+              {viewingBooking.visit_date && (
+                <div className="detail-group">
+                  <label>Visit Date:</label>
+                  <p>{formatDate(viewingBooking.visit_date)}</p>
+                </div>
+              )}
+              {viewingBooking.mobile && (
+                <div className="detail-group">
+                  <label>Mobile:</label>
+                  <p>{viewingBooking.mobile}</p>
+                </div>
+              )}
+              {viewingBooking.email && (
+                <div className="detail-group">
+                  <label>Email:</label>
+                  <p>{viewingBooking.email}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

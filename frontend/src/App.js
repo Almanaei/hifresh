@@ -12,6 +12,7 @@ import Home from './components/Home';
 import UserList from './components/users/UserList';
 import ReportPage from './components/reports/ReportPage';
 import AnalyticsPage from './components/analytics/AnalyticsPage';
+import CertificatePage from './components/certificates/CertificatePage';
 
 function Navigation({ isLoggedIn, onLogout }) {
   return (
@@ -29,6 +30,7 @@ function Navigation({ isLoggedIn, onLogout }) {
           <>
             <li><Link to="/bookings/new">Create Booking</Link></li>
             <li><Link to="/bookings">View Bookings</Link></li>
+            <li><Link to="/certificates">Certificates</Link></li>
             <li><Link to="/backups">Backups</Link></li>
             <li><Link to="/users">Users</Link></li>
             <li><Link to="/reports">Reports</Link></li>
@@ -79,6 +81,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <BookingList />
+                </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="/certificates" 
+              element={
+                <PrivateRoute>
+                  <CertificatePage />
                 </PrivateRoute>
               } 
             />

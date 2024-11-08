@@ -5,6 +5,7 @@ const { validateBooking } = require('../middleware/validationMiddleware');
 const { createBooking, getUserBookings, updateBooking, deleteBooking } = require('../controllers/bookingController');
 const multer = require('multer');
 const path = require('path');
+const db = require('../config/db');
 
 // Configure multer for file upload
 const storage = multer.diskStorage({
@@ -45,6 +46,22 @@ router.put('/:id', verifyToken, validateBooking, updateBooking);
 
 // Delete a booking
 router.delete('/:id', verifyToken, deleteBooking);
+
+// Add this route to get all bookings without pagination
+router.get('/all', verifyToken, async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT b.*, u.username 
+       FROM bookings b
+       JOIN users u ON b.user_id = u.id
+       ORDER BY b.created_at DESC`
+    );
+    res.json({ bookings: result.rows });
+  } catch (error) {
+    console.error('Error fetching all bookings:', error);
+    res.status(500).json({ message: 'Error fetching bookings' });
+  }
+});
 
 module.exports = router; 
 

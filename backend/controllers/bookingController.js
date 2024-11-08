@@ -2,11 +2,9 @@ const db = require('../config/db');
 
 /**
  * Creates a new booking
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
  */
 async function createBooking(req, res) {
-  const { title, description, booking_date } = req.body;
+  const { title, description, booking_date, visit_date, mobile, email } = req.body;
   const userId = req.user.userId;
 
   try {
@@ -15,10 +13,10 @@ async function createBooking(req, res) {
 
     const result = await db.query(
       `INSERT INTO bookings 
-       (user_id, title, description, booking_date, attachment_url, attachment_name) 
-       VALUES ($1, $2, $3, $4, $5, $6) 
-       RETURNING id, title, description, booking_date, status, attachment_url, attachment_name`,
-      [userId, title, description, booking_date, attachment_url, attachment_name]
+       (user_id, title, description, booking_date, visit_date, mobile, email, attachment_url, attachment_name) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+       RETURNING id, title, description, booking_date, visit_date, mobile, email, status, attachment_url, attachment_name`,
+      [userId, title, description, booking_date, visit_date || null, mobile || null, email || null, attachment_url, attachment_name]
     );
 
     res.status(201).json({
@@ -33,8 +31,6 @@ async function createBooking(req, res) {
 
 /**
  * Gets all bookings for a user
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
  */
 async function getUserBookings(req, res) {
   const userId = req.user.userId;
@@ -51,13 +47,13 @@ async function getUserBookings(req, res) {
     const totalItems = parseInt(countResult.rows[0].count);
     const totalPages = Math.ceil(totalItems / limit);
 
-    // Get paginated results
+    // Get paginated results with visit_date field included
     const result = await db.query(
-      `SELECT id, title, description, booking_date, status, attachment_url, attachment_name,
-              created_at, updated_at
+      `SELECT id, title, description, booking_date, visit_date, mobile, email, 
+              status, attachment_url, attachment_name, created_at, updated_at
        FROM bookings 
        WHERE user_id = $1 
-       ORDER BY booking_date DESC
+       ORDER BY created_at DESC
        LIMIT $2 OFFSET $3`,
       [userId, limit, offset]
     );
@@ -83,11 +79,10 @@ async function getUserBookings(req, res) {
  */
 async function updateBooking(req, res) {
   const { id } = req.params;
-  const { title, description, booking_date, status } = req.body;
+  const { title, description, booking_date, visit_date, status, mobile, email } = req.body;
   const userId = req.user.userId;
 
   try {
-    // First check if the booking belongs to the user
     const booking = await db.query(
       'SELECT * FROM bookings WHERE id = $1 AND user_id = $2',
       [id, userId]
@@ -99,10 +94,17 @@ async function updateBooking(req, res) {
 
     const result = await db.query(
       `UPDATE bookings 
-       SET title = $1, description = $2, booking_date = $3, status = $4, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $5 AND user_id = $6
-       RETURNING id, title, description, booking_date, status`,
-      [title, description, booking_date, status, id, userId]
+       SET title = $1, 
+           description = $2, 
+           booking_date = $3, 
+           visit_date = $4, 
+           status = $5,
+           mobile = $6,
+           email = $7,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $8 AND user_id = $9
+       RETURNING id, title, description, booking_date, visit_date, mobile, email, status`,
+      [title, description, booking_date, visit_date || null, status, mobile || null, email || null, id, userId]
     );
 
     res.json({

@@ -43,6 +43,6 @@ CREATE TABLE certificates (
 );
 
 -- Create indexes for better performance
-CREATE INDEX IF NOT EXISTS idx_bookings_user_id ON bookings(user_id);
-CREATE INDEX IF NOT EXISTS idx_bookings_date ON bookings(booking_date);
-CREATE INDEX IF NOT EXISTS idx_certificates_booking ON certificates(booking_id);
+CREATE INDEX idx_bookings_user_id ON bookings(user_id);
+CREATE INDEX idx_bookings_date ON bookings(booking_date);
+CREATE INDEX idx_certificates_booking ON certificates(booking_id); 
