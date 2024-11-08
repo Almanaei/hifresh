@@ -884,6 +884,7 @@ button:hover:not(:disabled) {
 
 .bookings-list {
   margin-top: 20px;
+  overflow-x: auto;
 }
 
 .bookings-table {
@@ -898,33 +899,48 @@ button:hover:not(:disabled) {
   padding: 12px;
   text-align: left;
   border-bottom: 1px solid #ddd;
+  white-space: nowrap;
 }
 
 .bookings-table th {
   background-color: #f8f9fa;
   font-weight: bold;
   color: #333;
+  position: sticky;
+  top: 0;
 }
 
 .bookings-table tr:hover {
   background-color: #f5f5f5;
 }
 
-.bookings-table td .button-group {
-  display: flex;
-  gap: 5px;
+.bookings-table td.action-buttons {
+  white-space: nowrap;
+  text-align: center;
 }
 
-.bookings-table td .button-group button {
-  padding: 4px 8px;
+.bookings-table td.action-buttons button {
+  padding: 6px 12px;
+  margin: 0 2px;
   font-size: 0.9em;
 }
 
-@media (max-width: 768px) {
-  .view-toggle {
-    margin-top: 10px;
+.bookings-table td:nth-child(3) {
+  /* Description column */
+  max-width: 200px;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .bookings-table td:nth-child(3) {
+    max-width: 150px;
   }
-  
+}
+
+@media (max-width: 768px) {
   .bookings-table {
     font-size: 14px;
   }
@@ -933,4 +949,81 @@ button:hover:not(:disabled) {
   .bookings-table td {
     padding: 8px;
   }
+
+  .bookings-table td:nth-child(3) {
+    max-width: 100px;
+  }
+}
+
+/* Add these styles for attachment handling */
+.attachment-link {
+  color: #007bff;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.attachment-link:hover {
+  text-decoration: underline;
+}
+
+.attachment-viewer {
+  max-width: 90%;
+  max-height: 90vh;
+  width: auto;
+  background: white;
+}
+
+.attachment-preview {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  margin: 0 auto;
+  display: block;
+}
+
+.attachment-actions {
+  text-align: center;
+  padding: 20px;
+}
+
+.download-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.download-button:hover {
+  background-color: #0056b3;
+}
+
+/* Update modal styles for better attachment viewing */
+.modal-content.attachment-viewer {
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content.attachment-viewer .modal-body {
+  padding: 20px 0;
+}
+
+/* Add this style */
+.attachment-button {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  text-decoration: underline;
+}
+
+.attachment-button:hover {
+  color: #0056b3;
 }

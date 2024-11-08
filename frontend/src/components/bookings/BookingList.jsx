@@ -125,6 +125,44 @@ function BookingList() {
     return index + 1;
   };
 
+  // Add this state for attachment viewing
+  const [viewingAttachment, setViewingAttachment] = useState(null);
+
+  // Add this function to handle attachment clicks
+  const handleAttachmentClick = (e, attachment) => {
+    e.preventDefault();
+    const fileExtension = attachment.name.split('.').pop().toLowerCase();
+    const baseUrl = process.env.REACT_APP_API_URL.replace('/api', '');
+    const fullUrl = `${baseUrl}${attachment.url}`;
+    
+    // Image files - show in modal
+    if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+      setViewingAttachment({
+        ...attachment,
+        url: fullUrl,
+        type: 'image'
+      });
+    } 
+    // PDF files - open in new tab
+    else if (fileExtension === 'pdf') {
+      window.open(fullUrl, '_blank');
+    }
+    // Other files - download
+    else {
+      const link = document.createElement('a');
+      link.href = fullUrl;
+      link.download = attachment.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  // Add this function to close attachment viewer
+  const closeAttachmentViewer = () => {
+    setViewingAttachment(null);
+  };
+
   if (loading) return <div>Loading bookings...</div>;
   if (error) return <div className="error-message">{error}</div>;
 
@@ -194,7 +232,78 @@ function BookingList() {
             Showing {filteredBookings.length} of {bookings.length} bookings
           </p>
           
-          {viewMode === 'grid' ? (
+          {viewMode === 'list' ? (
+            <div className="bookings-list">
+              <table className="bookings-table">
+                <thead>
+                  <tr>
+                    <th>No.</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Attachment</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredBookings.map((booking, index) => (
+                    <tr key={booking.id}>
+                      <td>{calculateSerialNumber(index)}</td>
+                      <td>{booking.title}</td>
+                      <td>{booking.description || 'N/A'}</td>
+                      <td>{formatDate(booking.booking_date)}</td>
+                      <td>
+                        <span className={`status status-${booking.status}`}>
+                          {booking.status}
+                        </span>
+                      </td>
+                      <td>
+                        {booking.attachment_url ? (
+                          <button
+                            onClick={(e) => handleAttachmentClick(e, {
+                              url: booking.attachment_url,
+                              name: booking.attachment_name
+                            })}
+                            className="attachment-button"
+                          >
+                            View
+                          </button>
+                        ) : (
+                          'None'
+                        )}
+                      </td>
+                      <td>{formatDate(booking.created_at)}</td>
+                      <td className="action-buttons">
+                        <button 
+                          onClick={() => handleView(booking)}
+                          className="view-button"
+                          title="View Details"
+                        >
+                          View
+                        </button>
+                        <button 
+                          onClick={() => handleEdit(booking)}
+                          className="edit-button"
+                          title="Edit Booking"
+                        >
+                          Edit
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(booking.id)}
+                          className="delete-button"
+                          title="Delete Booking"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
             <div className="bookings-grid">
               {filteredBookings.map((booking) => (
                 <div key={booking.id} className="booking-card">
@@ -266,9 +375,12 @@ function BookingList() {
                         <p className="attachment">
                           <strong>Attachment:</strong>{' '}
                           <a 
-                            href={booking.attachment_url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
+                            href={booking.attachment_url}
+                            onClick={(e) => handleAttachmentClick(e, {
+                              url: booking.attachment_url,
+                              name: booking.attachment_name
+                            })}
+                            className="attachment-link"
                           >
                             {booking.attachment_name}
                           </a>
@@ -298,68 +410,6 @@ function BookingList() {
                   )}
                 </div>
               ))}
-            </div>
-          ) : (
-            <div className="bookings-list">
-              <table className="bookings-table">
-                <thead>
-                  <tr>
-                    <th>No.</th>
-                    <th>Title</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Attachment</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredBookings.map((booking, index) => (
-                    <tr key={booking.id}>
-                      <td>{calculateSerialNumber(index)}</td>
-                      <td>{booking.title}</td>
-                      <td>{formatDate(booking.booking_date)}</td>
-                      <td>
-                        <span className={`status status-${booking.status}`}>
-                          {booking.status}
-                        </span>
-                      </td>
-                      <td>
-                        {booking.attachment_url ? (
-                          <a
-                            href={booking.attachment_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            View
-                          </a>
-                        ) : (
-                          'None'
-                        )}
-                      </td>
-                      <td>
-                        <button 
-                          onClick={() => handleView(booking)}
-                          className="view-button"
-                        >
-                          View
-                        </button>
-                        <button 
-                          onClick={() => handleEdit(booking)}
-                          className="edit-button"
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(booking.id)}
-                          className="delete-button"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
           )}
         </>
@@ -472,6 +522,31 @@ function BookingList() {
           </tbody>
         </table>
       </div>
+
+      {/* Add this modal for viewing attachments (add it at the end of your component, before the final closing tag) */}
+      {viewingAttachment && (
+        <div className="modal-overlay" onClick={closeAttachmentViewer}>
+          <div className="modal-content attachment-viewer" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Attachment: {viewingAttachment.name}</h2>
+              <button className="close-button" onClick={closeAttachmentViewer}>&times;</button>
+            </div>
+            <div className="modal-body">
+              {viewingAttachment.type === 'image' ? (
+                <img 
+                  src={viewingAttachment.url} 
+                  alt={viewingAttachment.name}
+                  className="attachment-preview"
+                />
+              ) : (
+                <div className="attachment-actions">
+                  <p>Downloading file...</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

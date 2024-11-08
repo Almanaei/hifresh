@@ -10,6 +10,10 @@ const cors = require('cors');
 
 
 
+const path = require('path');
+
+
+
 const userRoutes = require('./routes/userRoutes');
 
 
@@ -48,6 +52,40 @@ app.use((req, res, next) => {
 
 
 
+const fs = require('fs');
+
+const uploadsDir = path.join(__dirname, 'uploads');
+
+if (!fs.existsSync(uploadsDir)){
+
+  fs.mkdirSync(uploadsDir, { recursive: true });
+
+}
+
+
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+
+  setHeaders: (res, filePath) => {
+
+    if (path.extname(filePath) === '.pdf') {
+
+      res.set({
+
+        'Content-Type': 'application/pdf',
+
+        'Content-Disposition': 'inline; filename=' + path.basename(filePath)
+
+      });
+
+    }
+
+  }
+
+}));
+
+
+
 app.use('/api/users', userRoutes);
 
 
@@ -61,10 +99,6 @@ app.use('/api/backups', backupRoutes);
 
 
 app.use('/api/reports', reportRoutes);
-
-
-
-app.use('/uploads', express.static('uploads'));
 
 
 
