@@ -1,0 +1,23 @@
+Code Consistency: AI can recognize coding style patterns (like indentation, naming conventions) and can apply linters or formatters (e.g., ESLint, Prettier) to keep code uniform. AI could also assist by alerting when a style is inconsistent.
+
+Avoiding Hardcoding Values: AI can recommend environment variables or constants for sensitive or repetitive values. It might recognize hardcoded values and suggest alternatives, especially if patterns in variable naming or use are inconsistent.
+
+Separation of Concerns: AI could help by suggesting or generating a file structure based on best practices. For instance, it could separate routes, controllers, and models automatically in the backend or encourage component modularity in React.
+
+Middleware for Reusable Logic: AI can recognize repeated logic (like authentication checks) and suggest middleware. It can also generate boilerplate code for common middleware setups.
+
+Database and ORM Management: AI can generate or recommend ORM-based code to structure database queries or suggest SQL code where appropriate. It can also help organize complex queries for better readability.
+
+RESTful API Design: AI understands RESTful conventions and can create, structure, and document endpoints accordingly.
+
+State Management in React: AI can recognize when an app might benefit from structured state management (e.g., Context API) and can set up patterns for managing async data in hooks, providing examples or templates.
+
+Error Handling and Logging: AI could wrap async code in try/catch blocks or add logging for debugging. It can also set up or configure logging libraries and suggest where to send user-friendly vs. technical error messages.
+
+Commenting and Documentation: AI can add comments or inline documentation automatically. With JSDoc or similar tools, AI could generate doc comments for backend functions or create a standardized approach to commenting on logic.
+
+Version Control Practices: AI can guide in using version control workflows, like suggesting commit messages or branching strategies. Integrated into a code platform, it could enforce branch naming conventions or set up automated pull request checks.
+
+React Component Optimization: AI can identify when components might benefit from React.memo, useCallback, or useMemo to prevent excessive re-renders and could make suggestions based on component usage patterns.
+
+Testing: AI can generate simple tests, recognizing endpoints, components, and user flows that should be tested. It could help automate tests or recommend testing tools like Jest for backend and React Testing Library for the frontend.
