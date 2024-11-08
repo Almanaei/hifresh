@@ -11,6 +11,7 @@ import BackupPage from './components/backup/BackupPage';
 import Home from './components/Home';
 import UserList from './components/users/UserList';
 import ReportPage from './components/reports/ReportPage';
+import AnalyticsPage from './components/analytics/AnalyticsPage';
 
 function Navigation({ isLoggedIn, onLogout }) {
   return (
@@ -31,6 +32,7 @@ function Navigation({ isLoggedIn, onLogout }) {
             <li><Link to="/backups">Backups</Link></li>
             <li><Link to="/users">Users</Link></li>
             <li><Link to="/reports">Reports</Link></li>
+            <li><Link to="/analytics">Analytics</Link></li>
             <li><button onClick={onLogout} className="logout-button">Logout</button></li>
           </>
         )}
@@ -101,6 +103,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <ReportPage />
+                </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="/analytics" 
+              element={
+                <PrivateRoute>
+                  <AnalyticsPage />
                 </PrivateRoute>
               } 
             />

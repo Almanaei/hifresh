@@ -146,6 +146,16 @@ export const api = {
     });
     return handleResponse(response);
   },
+
+  getAnalytics: async () => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/analytics`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    return handleResponse(response);
+  },
 };
 
 const handleResponse = async (response) => {

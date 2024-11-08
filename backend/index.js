@@ -30,6 +30,10 @@ const reportRoutes = require('./routes/reportRoutes');
 
 
 
+const analyticsRoutes = require('./routes/analyticsRoutes');
+
+
+
 const app = express();
 
 
@@ -99,6 +103,10 @@ app.use('/api/backups', backupRoutes);
 
 
 app.use('/api/reports', reportRoutes);
+
+
+
+app.use('/api/analytics', analyticsRoutes);
 
 
 
