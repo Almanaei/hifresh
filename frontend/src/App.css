@@ -1198,3 +1198,32 @@ button:hover:not(:disabled) {
   border-radius: 8px;
   margin-bottom: 20px;
 }
+
+/* Add these to your existing analytics styles */
+.rate-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.rate-button {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  background: white;
+  color: #666;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.rate-button.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.rate-button:hover:not(.active) {
+  background: #f8f9fa;
+  border-color: #007bff;
+  color: #007bff;
+}

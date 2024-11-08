@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
-import { Line } from 'react-chartjs-2';
+import { Line, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,7 +9,8 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  BarElement
 } from 'chart.js';
 
 // Register ChartJS components
@@ -18,6 +19,7 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend
@@ -27,6 +29,7 @@ function AnalyticsPage() {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [rateView, setRateView] = useState('daily');
 
   useEffect(() => {
     fetchAnalytics();
@@ -48,6 +51,93 @@ function AnalyticsPage() {
       year: 'numeric',
       month: 'short'
     });
+  };
+
+  const formatRateDate = (dateString, view) => {
+    const date = new Date(dateString);
+    switch (view) {
+      case 'daily':
+        return date.toLocaleDateString();
+      case 'weekly':
+        return `Week of ${date.toLocaleDateString()}`;
+      case 'monthly':
+        return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      default:
+        return dateString;
+    }
+  };
+
+  const getRateChartData = () => {
+    if (!analytics?.bookingRates) return null;
+
+    const rates = analytics.bookingRates[rateView];
+    return {
+      labels: rates.map(rate => formatRateDate(rate.date || rate.week || rate.month, rateView)),
+      datasets: [
+        {
+          label: 'Total Bookings',
+          data: rates.map(rate => rate.total_bookings),
+          borderColor: '#007bff',
+          backgroundColor: 'rgba(0, 123, 255, 0.2)',
+          type: 'line',
+          yAxisID: 'y1',
+        },
+        {
+          label: 'Success Rate (%)',
+          data: rates.map(rate => rate.success_rate),
+          backgroundColor: 'rgba(40, 167, 69, 0.6)',
+          yAxisID: 'y2',
+        },
+        {
+          label: 'Cancellation Rate (%)',
+          data: rates.map(rate => rate.cancellation_rate),
+          backgroundColor: 'rgba(220, 53, 69, 0.6)',
+          yAxisID: 'y2',
+        }
+      ]
+    };
+  };
+
+  const rateChartOptions = {
+    responsive: true,
+    interaction: {
+      mode: 'index',
+      intersect: false,
+    },
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: `${rateView.charAt(0).toUpperCase() + rateView.slice(1)} Booking Rates`
+      }
+    },
+    scales: {
+      y1: {
+        type: 'linear',
+        display: true,
+        position: 'left',
+        title: {
+          display: true,
+          text: 'Number of Bookings'
+        }
+      },
+      y2: {
+        type: 'linear',
+        display: true,
+        position: 'right',
+        title: {
+          display: true,
+          text: 'Rate (%)'
+        },
+        grid: {
+          drawOnChartArea: false
+        },
+        min: 0,
+        max: 100
+      }
+    }
   };
 
   // Prepare chart data
@@ -205,6 +295,38 @@ function AnalyticsPage() {
               <div className="hour-label">{time.hour}:00</div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Booking Rates Section */}
+      <div className="analytics-card">
+        <div className="rate-controls">
+          <button 
+            className={`rate-button ${rateView === 'daily' ? 'active' : ''}`}
+            onClick={() => setRateView('daily')}
+          >
+            Daily
+          </button>
+          <button 
+            className={`rate-button ${rateView === 'weekly' ? 'active' : ''}`}
+            onClick={() => setRateView('weekly')}
+          >
+            Weekly
+          </button>
+          <button 
+            className={`rate-button ${rateView === 'monthly' ? 'active' : ''}`}
+            onClick={() => setRateView('monthly')}
+          >
+            Monthly
+          </button>
+        </div>
+        <div style={{ height: '400px', padding: '20px 0' }}>
+          {analytics?.bookingRates && (
+            <Bar 
+              data={getRateChartData()} 
+              options={rateChartOptions}
+            />
+          )}
         </div>
       </div>
     </div>

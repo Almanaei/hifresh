@@ -121,6 +121,58 @@ async function getAnalytics(req, res) {
       GROUP BY status
     `);
 
+    // Get daily booking rates for the last 30 days
+    const dailyRates = await db.query(`
+      SELECT 
+        DATE_TRUNC('day', booking_date) as date,
+        COUNT(*) as total_bookings,
+        COUNT(CASE WHEN status = 'confirmed' THEN 1 END) as confirmed_bookings,
+        COUNT(CASE WHEN status = 'cancelled' THEN 1 END) as cancelled_bookings
+      FROM bookings
+      WHERE booking_date >= CURRENT_DATE - INTERVAL '30 days'
+      GROUP BY DATE_TRUNC('day', booking_date)
+      ORDER BY date ASC
+    `);
+
+    // Get weekly booking rates for the last 12 weeks
+    const weeklyRates = await db.query(`
+      SELECT 
+        DATE_TRUNC('week', booking_date) as week,
+        COUNT(*) as total_bookings,
+        COUNT(CASE WHEN status = 'confirmed' THEN 1 END) as confirmed_bookings,
+        COUNT(CASE WHEN status = 'cancelled' THEN 1 END) as cancelled_bookings
+      FROM bookings
+      WHERE booking_date >= CURRENT_DATE - INTERVAL '12 weeks'
+      GROUP BY DATE_TRUNC('week', booking_date)
+      ORDER BY week ASC
+    `);
+
+    // Get monthly booking rates for the last 12 months
+    const monthlyRates = await db.query(`
+      SELECT 
+        DATE_TRUNC('month', booking_date) as month,
+        COUNT(*) as total_bookings,
+        COUNT(CASE WHEN status = 'confirmed' THEN 1 END) as confirmed_bookings,
+        COUNT(CASE WHEN status = 'cancelled' THEN 1 END) as cancelled_bookings
+      FROM bookings
+      WHERE booking_date >= CURRENT_DATE - INTERVAL '12 months'
+      GROUP BY DATE_TRUNC('month', booking_date)
+      ORDER BY month ASC
+    `);
+
+    // Calculate success rates
+    const calculateRates = (data) => {
+      return data.map(row => ({
+        ...row,
+        success_rate: row.total_bookings > 0 
+          ? Math.round((row.confirmed_bookings / row.total_bookings) * 100) 
+          : 0,
+        cancellation_rate: row.total_bookings > 0 
+          ? Math.round((row.cancelled_bookings / row.total_bookings) * 100) 
+          : 0
+      }));
+    };
+
     res.json({
       bookingTrends: bookingTrends.rows,
       userActivity: userActivity.rows,
@@ -131,7 +183,12 @@ async function getAnalytics(req, res) {
       userStats: userStats.rows[0],
       attachmentTypes: attachmentTypes.rows,
       creationPatterns: creationPatterns.rows,
-      durationStats: durationStats.rows
+      durationStats: durationStats.rows,
+      bookingRates: {
+        daily: calculateRates(dailyRates.rows),
+        weekly: calculateRates(weeklyRates.rows),
+        monthly: calculateRates(monthlyRates.rows)
+      }
     });
   } catch (error) {
     console.error('Error fetching analytics:', error);
