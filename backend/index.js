@@ -22,6 +22,10 @@ const backupRoutes = require('./routes/backupRoutes');
 
 
 
+const reportRoutes = require('./routes/reportRoutes');
+
+
+
 const app = express();
 
 
@@ -53,6 +57,10 @@ app.use('/api/bookings', bookingRoutes);
 
 
 app.use('/api/backups', backupRoutes);
+
+
+
+app.use('/api/reports', reportRoutes);
 
 
 

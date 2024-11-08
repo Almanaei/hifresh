@@ -38,18 +38,39 @@ async function createBooking(req, res) {
  */
 async function getUserBookings(req, res) {
   const userId = req.user.userId;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
 
   try {
+    // Get total count
+    const countResult = await db.query(
+      'SELECT COUNT(*) FROM bookings WHERE user_id = $1',
+      [userId]
+    );
+    const totalItems = parseInt(countResult.rows[0].count);
+    const totalPages = Math.ceil(totalItems / limit);
+
+    // Get paginated results
     const result = await db.query(
-      `SELECT id, title, description, booking_date, status, attachment_url, attachment_name 
+      `SELECT id, title, description, booking_date, status, attachment_url, attachment_name,
+              created_at, updated_at
        FROM bookings 
        WHERE user_id = $1 
-       ORDER BY booking_date DESC`,
-      [userId]
+       ORDER BY booking_date DESC
+       LIMIT $2 OFFSET $3`,
+      [userId, limit, offset]
     );
 
     res.json({
-      bookings: result.rows
+      bookings: result.rows,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalItems,
+        hasNext: page < totalPages,
+        hasPrevious: page > 1
+      }
     });
   } catch (error) {
     console.error('Error fetching bookings:', error);

@@ -458,7 +458,47 @@ async function getUsers(req, res) {
 
 
 
+  const page = parseInt(req.query.page) || 1;
+
+
+
+  const limit = parseInt(req.query.limit) || 10;
+
+
+
+  const offset = (page - 1) * limit;
+
+
+
+
+
+
+
   try {
+
+
+
+    // Get total count
+
+
+
+    const countResult = await db.query('SELECT COUNT(*) FROM users');
+
+
+
+    const totalItems = parseInt(countResult.rows[0].count);
+
+
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+
+
+
+
+
+
+    // Get paginated results
 
 
 
@@ -468,7 +508,12 @@ async function getUsers(req, res) {
 
       `SELECT id, username, email, created_at, updated_at 
        FROM users 
-       ORDER BY created_at DESC`
+       ORDER BY created_at DESC
+       LIMIT $1 OFFSET $2`,
+
+
+
+      [limit, offset]
 
 
 
@@ -484,7 +529,35 @@ async function getUsers(req, res) {
 
 
 
-      users: result.rows
+      users: result.rows,
+
+
+
+      pagination: {
+
+
+
+        currentPage: page,
+
+
+
+        totalPages,
+
+
+
+        totalItems,
+
+
+
+        hasNext: page < totalPages,
+
+
+
+        hasPrevious: page > 1
+
+
+
+      }
 
 
 
