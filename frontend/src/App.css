@@ -1,8 +1,9 @@
 .App {
   text-align: center;
-  max-width: 800px;
+  width: 100%;
   margin: 0 auto;
-  padding: 20px;
+  padding: 0;
+  overflow-x: hidden;
 }
 
 .App-logo {
@@ -561,8 +562,8 @@ button:hover:not(:disabled) {
 
 .table-container {
   width: 100%;
+  margin: 20px 0;
   overflow-x: auto;
-  margin-top: 20px;
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -1421,4 +1422,143 @@ button:hover:not(:disabled) {
   margin-top: 5px;
   color: #666;
   font-size: 0.9em;
+}
+
+/* Update the table styles to handle overflow better */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bookings-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: auto; /* Remove minimum width */
+}
+
+.bookings-table th,
+.bookings-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  white-space: normal; /* Allow text wrapping */
+  word-break: break-word; /* Break long words */
+}
+
+/* Set column widths */
+.bookings-table th:nth-child(1), /* No. column */
+.bookings-table td:nth-child(1) {
+  width: 50px;
+}
+
+.bookings-table th:nth-child(2), /* Title column */
+.bookings-table td:nth-child(2) {
+  width: 20%;
+}
+
+.bookings-table th:nth-child(3), /* Description column */
+.bookings-table td:nth-child(3) {
+  width: 30%;
+}
+
+.bookings-table th:nth-child(4), /* Date column */
+.bookings-table td:nth-child(4) {
+  width: 15%;
+}
+
+.bookings-table th:nth-child(5), /* Status column */
+.bookings-table td:nth-child(5) {
+  width: 10%;
+}
+
+.bookings-table th:nth-child(6), /* Attachment column */
+.bookings-table td:nth-child(6) {
+  width: 10%;
+}
+
+.bookings-table th:nth-child(7), /* Created column */
+.bookings-table td:nth-child(7) {
+  width: 15%;
+}
+
+.bookings-table th:nth-child(8), /* Actions column */
+.bookings-table td:nth-child(8) {
+  width: auto;
+  white-space: nowrap;
+}
+
+/* Make action buttons more compact */
+.action-buttons {
+  display: flex;
+  gap: 5px;
+  flex-wrap: nowrap;
+}
+
+.action-buttons button {
+  padding: 6px 12px;
+  font-size: 0.9em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .bookings-table {
+    font-size: 14px;
+  }
+  
+  .bookings-table th,
+  .bookings-table td {
+    padding: 8px;
+  }
+  
+  .action-buttons button {
+    padding: 4px 8px;
+    font-size: 0.8em;
+  }
+}
+
+/* Update the main container styles */
+.App {
+  text-align: center;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Update the container widths for all main pages */
+.booking-list,
+.user-list,
+.backup-page,
+.report-page,
+.analytics-page,
+.certificate-page {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+/* Update table container styles */
+.table-container {
+  width: 100%;
+  margin: 20px 0;
+  overflow-x: auto; /* Allow horizontal scroll only within tables if needed */
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Update table styles */
+.bookings-table,
+.user-table,
+.certificates-table,
+.analytics-table,
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
 }
