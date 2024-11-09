@@ -12,6 +12,7 @@ import {
   Legend,
   BarElement
 } from 'chart.js';
+import './AnalyticsPage.css';
 
 // Register ChartJS components
 ChartJS.register(
@@ -216,7 +217,20 @@ function AnalyticsPage() {
     }
   };
 
-  if (loading) return <div>Loading analytics...</div>;
+  const getTimeLabel = (hour) => {
+    const formattedHour = hour.toString().padStart(2, '0');
+    const nextHour = ((hour + 1) % 24).toString().padStart(2, '0');
+    return `${formattedHour}:00 - ${nextHour}:00`;
+  };
+
+  const getBarColor = (count, maxCount) => {
+    const percentage = (count / maxCount) * 100;
+    if (percentage >= 75) return 'linear-gradient(180deg, #00C853 0%, #43A047 100%)';
+    if (percentage >= 50) return 'linear-gradient(180deg, #2196F3 0%, #1976D2 100%)';
+    return 'linear-gradient(180deg, #90CAF9 0%, #64B5F6 100%)';
+  };
+
+  if (loading) return <div className="loading-state">Loading analytics...</div>;
   if (error) return <div className="error-message">{error}</div>;
   if (!analytics) return null;
 
@@ -246,56 +260,39 @@ function AnalyticsPage() {
       {/* Booking Trends Chart */}
       <div className="analytics-card">
         <h3>Monthly Booking Trends</h3>
-        <div style={{ height: '300px', padding: '20px 0' }}>
-          <Line data={chartData} options={chartOptions} />
+        <div className="chart-container">
+          <Line 
+            data={chartData} 
+            options={chartOptions}
+          />
         </div>
       </div>
 
       {/* User Activity Table */}
       <div className="analytics-card">
         <h3>Top Active Users</h3>
-        <div className="table-container">
-          <table className="analytics-table">
-            <thead>
-              <tr>
-                <th>User</th>
-                <th>Total Bookings</th>
-                <th>Confirmed</th>
-                <th>Cancelled</th>
-                <th>Last Activity</th>
+        <table className="analytics-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Total Bookings</th>
+              <th>Confirmed</th>
+              <th>Cancelled</th>
+              <th>Last Activity</th>
+            </tr>
+          </thead>
+          <tbody>
+            {analytics.userActivity.map(user => (
+              <tr key={user.username}>
+                <td>{user.username}</td>
+                <td>{user.total_bookings}</td>
+                <td>{user.confirmed_bookings}</td>
+                <td>{user.cancelled_bookings}</td>
+                <td>{new Date(user.last_activity).toLocaleDateString()}</td>
               </tr>
-            </thead>
-            <tbody>
-              {analytics.userActivity.map(user => (
-                <tr key={user.username}>
-                  <td>{user.username}</td>
-                  <td>{user.total_bookings}</td>
-                  <td>{user.confirmed_bookings}</td>
-                  <td>{user.cancelled_bookings}</td>
-                  <td>{new Date(user.last_activity).toLocaleDateString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Popular Hours Chart */}
-      <div className="analytics-card">
-        <h3>Popular Booking Hours</h3>
-        <div className="hours-chart">
-          {analytics.popularTimes.map(time => (
-            <div key={time.hour} className="hour-bar">
-              <div 
-                className="bar"
-                style={{ 
-                  height: `${(time.booking_count / Math.max(...analytics.popularTimes.map(t => t.booking_count))) * 100}%` 
-                }}
-              />
-              <div className="hour-label">{time.hour}:00</div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {/* Booking Rates Section */}
@@ -320,13 +317,111 @@ function AnalyticsPage() {
             Monthly
           </button>
         </div>
-        <div style={{ height: '400px', padding: '20px 0' }}>
-          {analytics?.bookingRates && (
-            <Bar 
-              data={getRateChartData()} 
-              options={rateChartOptions}
-            />
-          )}
+        <div className="chart-container">
+          <Bar 
+            data={getRateChartData()} 
+            options={rateChartOptions}
+          />
+        </div>
+      </div>
+
+      {/* Popular Hours Chart Section */}
+      <div className="analytics-card">
+        <h3>Popular Booking Hours</h3>
+        <div className="hours-chart-container">
+          {/* Y-axis labels showing percentage scale */}
+          <div className="chart-y-axis">
+            <span>100%</span>
+            <span>75%</span>
+            <span>50%</span>
+            <span>25%</span>
+            <span>0%</span>
+          </div>
+
+          {/* Main chart area */}
+          <div className="hours-chart">
+            {/* Mapping through each hour's data */}
+            {analytics.popularTimes.map(time => {
+              // Calculate the maximum number of bookings for any hour
+              const maxCount = Math.max(...analytics.popularTimes.map(t => t.booking_count));
+              // Calculate this hour's percentage relative to the maximum
+              const percentage = (time.booking_count / maxCount) * 100;
+
+              return (
+                <div key={time.hour} className="hour-bar-wrapper">
+                  {/* Number of bookings displayed above the bar */}
+                  <div className="hour-count">
+                    {time.booking_count}
+                  </div>
+
+                  {/* The actual bar representing booking volume */}
+                  <div 
+                    className="hour-bar"
+                    style={{ 
+                      height: `${percentage}%`, // Height based on percentage
+                      background: getBarColor(time.booking_count, maxCount) // Color based on traffic level
+                    }}
+                  >
+                    {/* Tooltip that appears on hover */}
+                    <div className="hour-tooltip">
+                      <div className="tooltip-header">
+                        {getTimeLabel(time.hour)} {/* Shows time range (e.g., "09:00 - 10:00") */}
+                      </div>
+                      <div className="tooltip-content">
+                        <strong>{time.booking_count}</strong> bookings
+                        <div className="tooltip-percentage">
+                          {percentage.toFixed(1)}% of peak {/* Shows percentage of peak traffic */}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Time label below the bar */}
+                  <div className="hour-label">
+                    <span className="hour-time">{getTimeLabel(time.hour)}</span>
+                    <span className="hour-percentage">{percentage.toFixed(0)}%</span>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Reference lines for easy comparison */}
+            <div className="comparison-line peak" title="100% (Peak Traffic)"></div>
+            <div className="comparison-line high" title="75% of Peak Traffic"></div>
+            <div className="comparison-line medium" title="50% of Peak Traffic"></div>
+            <div className="comparison-line low" title="25% of Peak Traffic"></div>
+          </div>
+
+          {/* Legend explaining the color coding */}
+          <div className="hours-legend">
+            <div className="legend-item">
+              <span className="legend-color" style={{ 
+                background: 'linear-gradient(180deg, #00C853 0%, #43A047 100%)' 
+              }}></span>
+              <div className="legend-info">
+                <span className="legend-title">Peak Hours</span>
+                <span className="legend-subtitle">75-100% utilization</span>
+              </div>
+            </div>
+            <div className="legend-item">
+              <span className="legend-color" style={{ 
+                background: 'linear-gradient(180deg, #2196F3 0%, #1976D2 100%)' 
+              }}></span>
+              <div className="legend-info">
+                <span className="legend-title">Regular Hours</span>
+                <span className="legend-subtitle">50-74% utilization</span>
+              </div>
+            </div>
+            <div className="legend-item">
+              <span className="legend-color" style={{ 
+                background: 'linear-gradient(180deg, #90CAF9 0%, #64B5F6 100%)' 
+              }}></span>
+              <div className="legend-info">
+                <span className="legend-title">Off-Peak Hours</span>
+                <span className="legend-subtitle">0-49% utilization</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
