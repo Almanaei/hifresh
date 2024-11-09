@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
 import Pagination from '../common/Pagination';
+import './BackupPage.css';
 
 function BackupPage() {
   const [backups, setBackups] = useState([]);

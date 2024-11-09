@@ -1,0 +1,94 @@
+.backup-page {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.backup-page h2 {
+  color: var(--dark-gray);
+  margin-bottom: 30px;
+}
+
+.backup-actions {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.backup-actions button {
+  padding: 12px 24px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: var(--transition);
+}
+
+.backup-actions button:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.backup-actions button:disabled {
+  background-color: var(--gray);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.backup-list {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.backup-list h3 {
+  color: var(--dark-gray);
+  margin-bottom: 20px;
+}
+
+.pagination-info {
+  color: var(--gray);
+  margin-bottom: 15px;
+}
+
+.backup-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.backup-table th,
+.backup-table td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.backup-table th {
+  background-color: var(--light-gray);
+  font-weight: 600;
+  color: var(--dark-gray);
+}
+
+.backup-table tr:hover {
+  background-color: var(--light-gray);
+}
+
+@media (max-width: 768px) {
+  .backup-actions {
+    flex-direction: column;
+  }
+
+  .backup-actions button {
+    width: 100%;
+  }
+
+  .backup-table {
+    display: block;
+    overflow-x: auto;
+  }
+} 

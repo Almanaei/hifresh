@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import api from '../../services/api';
+import './ReportPage.css';
 
 function ReportPage() {
   const [loading, setLoading] = useState(false);

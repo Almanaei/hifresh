@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
 import Pagination from '../common/Pagination';
+import './UserList.css';
 
 function UserList() {
   const [users, setUsers] = useState([]);
@@ -91,7 +92,7 @@ function UserList() {
     setCurrentPage(page);
   };
 
-  if (loading) return <div>Loading users...</div>;
+  if (loading) return <div className="loading-state">Loading users...</div>;
   if (error) return <div className="error-message">{error}</div>;
 
   return (
@@ -111,20 +112,13 @@ function UserList() {
       </div>
 
       {filteredUsers.length === 0 ? (
-        <p>No users found.</p>
+        <p className="no-users">No users found.</p>
       ) : (
         <>
           {pagination && (
-            <>
-              <div className="pagination-info">
-                Showing {users.length} of {pagination.totalItems} users
-              </div>
-              <Pagination
-                currentPage={pagination.currentPage}
-                totalPages={pagination.totalPages}
-                onPageChange={handlePageChange}
-              />
-            </>
+            <div className="pagination-info">
+              Showing {users.length} of {pagination.totalItems} users
+            </div>
           )}
           <div className="table-container">
             <table className="user-table">
@@ -141,36 +135,39 @@ function UserList() {
                 {filteredUsers.map((user) => (
                   <tr key={user.id}>
                     {editingUser && editingUser.id === user.id ? (
-                      <>
-                        <td>
-                          <input
-                            type="text"
-                            name="username"
-                            value={editingUser.username}
-                            onChange={handleEditChange}
-                            required
-                          />
-                        </td>
-                        <td>
-                          <input
-                            type="email"
-                            name="email"
-                            value={editingUser.email || ''}
-                            onChange={handleEditChange}
-                          />
-                        </td>
-                        <td>{formatDate(user.created_at)}</td>
-                        <td>{formatDate(user.updated_at)}</td>
-                        <td>
-                          <button onClick={handleUpdate}>Save</button>
-                          <button 
-                            onClick={() => setEditingUser(null)}
-                            className="cancel-button"
-                          >
-                            Cancel
-                          </button>
-                        </td>
-                      </>
+                      <td colSpan="5">
+                        <form onSubmit={handleUpdate} className="edit-form">
+                          <div className="form-group">
+                            <input
+                              type="text"
+                              name="username"
+                              value={editingUser.username}
+                              onChange={handleEditChange}
+                              required
+                              className="form-control"
+                            />
+                          </div>
+                          <div className="form-group">
+                            <input
+                              type="email"
+                              name="email"
+                              value={editingUser.email || ''}
+                              onChange={handleEditChange}
+                              className="form-control"
+                            />
+                          </div>
+                          <div className="button-group">
+                            <button type="submit" className="edit-button">Save</button>
+                            <button 
+                              type="button" 
+                              onClick={() => setEditingUser(null)}
+                              className="cancel-button"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </form>
+                      </td>
                     ) : (
                       <>
                         <td>{user.username}</td>
@@ -178,24 +175,26 @@ function UserList() {
                         <td>{formatDate(user.created_at)}</td>
                         <td>{formatDate(user.updated_at)}</td>
                         <td>
-                          <button 
-                            onClick={() => handleEdit(user)}
-                            className="edit-button"
-                          >
-                            Edit
-                          </button>
-                          <button 
-                            onClick={() => handleResetPassword(user.id)}
-                            className="reset-button"
-                          >
-                            Reset Password
-                          </button>
-                          <button 
-                            onClick={() => handleDelete(user.id)}
-                            className="delete-button"
-                          >
-                            Delete
-                          </button>
+                          <div className="action-buttons">
+                            <button 
+                              onClick={() => handleEdit(user)}
+                              className="edit-button"
+                            >
+                              Edit
+                            </button>
+                            <button 
+                              onClick={() => handleResetPassword(user.id)}
+                              className="reset-button"
+                            >
+                              Reset Password
+                            </button>
+                            <button 
+                              onClick={() => handleDelete(user.id)}
+                              className="delete-button"
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </td>
                       </>
                     )}
@@ -204,6 +203,13 @@ function UserList() {
               </tbody>
             </table>
           </div>
+          {pagination && pagination.totalPages > 1 && (
+            <Pagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              onPageChange={handlePageChange}
+            />
+          )}
         </>
       )}
 
@@ -248,4 +254,4 @@ function UserList() {
   );
 }
 
-export default UserList; 
+export default UserList;

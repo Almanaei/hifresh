@@ -1,0 +1,138 @@
+/* CertificatePage specific styles */
+.certificate-page {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.certificate-generator {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  margin-bottom: 30px;
+}
+
+.certificate-generator h3 {
+  color: var(--dark-gray);
+  margin-bottom: 20px;
+}
+
+.booking-select {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  margin-top: 10px;
+  font-size: 1rem;
+  color: var(--dark-gray);
+}
+
+.generate-button {
+  width: 100%;
+  padding: 12px 24px;
+  background-color: var(--success-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: var(--transition);
+}
+
+.generate-button:hover {
+  background-color: #218838;
+  transform: translateY(-1px);
+}
+
+.generate-button:disabled {
+  background-color: var(--gray);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.certificates-list {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.list-header h3 {
+  color: var(--dark-gray);
+}
+
+.search-input {
+  padding: 10px;
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  min-width: 300px;
+  font-size: 1rem;
+}
+
+.certificates-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.certificates-table th,
+.certificates-table td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.certificates-table th {
+  background-color: var(--light-gray);
+  font-weight: 600;
+  color: var(--dark-gray);
+}
+
+.view-button {
+  padding: 8px 16px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.view-button:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.no-certificates {
+  text-align: center;
+  color: var(--gray);
+  padding: 30px;
+}
+
+@media (max-width: 768px) {
+  .list-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-input {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .certificates-table {
+    display: block;
+    overflow-x: auto;
+  }
+} 
