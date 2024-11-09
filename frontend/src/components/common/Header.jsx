@@ -65,11 +65,43 @@ function Header({ isAuthenticated, onLogout }) {
                 My Bookings
               </Link>
               <Link 
+                to="/certificates" 
+                className={`nav-link ${isActive('/certificates') ? 'active' : ''}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <span className="nav-icon">📜</span>
+                Certificates
+              </Link>
+              <Link 
+                to="/backups" 
+                className={`nav-link ${isActive('/backups') ? 'active' : ''}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <span className="nav-icon">💾</span>
+                Backups
+              </Link>
+              <Link 
+                to="/users" 
+                className={`nav-link ${isActive('/users') ? 'active' : ''}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <span className="nav-icon">👥</span>
+                Users
+              </Link>
+              <Link 
+                to="/reports" 
+                className={`nav-link ${isActive('/reports') ? 'active' : ''}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <span className="nav-icon">📊</span>
+                Reports
+              </Link>
+              <Link 
                 to="/analytics" 
                 className={`nav-link ${isActive('/analytics') ? 'active' : ''}`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <span className="nav-icon">📊</span>
+                <span className="nav-icon">📈</span>
                 Analytics
               </Link>
               <div className="nav-divider"></div>
