@@ -58,4 +58,10 @@ body {
   text-align: center;
   padding: 40px;
   color: var(--gray);
+}
+
+/* Remove old navigation styles */
+.main-nav,
+nav ul {
+  display: none !important; /* Force hide old navigation */
 } 

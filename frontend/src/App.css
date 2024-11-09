@@ -1,13 +1,8 @@
 /* App-specific layouts and components */
 
-/* Navigation */
+/* Remove old navigation styles */
 .main-nav {
-  background-color: white;
-  box-shadow: var(--shadow);
-  padding: 1rem 2rem;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
+  display: none !important; /* Force hide old navigation */
 }
 
 /* Modal styles */
@@ -73,4 +68,16 @@
 .table {
   width: 100%;
   border-collapse: collapse;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  background-color: var(--light-gray);
 }
