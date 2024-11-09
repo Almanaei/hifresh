@@ -51,9 +51,23 @@ function BookingList() {
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      await api.updateBooking(editingBooking.id, editingBooking);
+      const formData = new FormData();
+      formData.append('title', editingBooking.title);
+      formData.append('description', editingBooking.description || '');
+      formData.append('booking_date', editingBooking.booking_date);
+      formData.append('visit_date', editingBooking.visit_date || '');
+      formData.append('status', editingBooking.status);
+      formData.append('mobile', editingBooking.mobile || '');
+      formData.append('email', editingBooking.email || '');
+      
+      // Append new attachment if exists
+      if (editingBooking.newAttachment) {
+        formData.append('attachment', editingBooking.newAttachment);
+      }
+
+      await api.updateBooking(editingBooking.id, formData);
       setEditingBooking(null);
-      fetchBookings(); // Refresh the list
+      fetchBookings();
     } catch (err) {
       setError(err.message);
     }
@@ -71,14 +85,28 @@ function BookingList() {
   };
 
   const handleEditChange = (e) => {
-    const value = e.target.type === 'datetime-local' && e.target.value
-      ? new Date(e.target.value).toISOString()
-      : e.target.value;
+    if (e.target.type === 'file') {
+      const file = e.target.files[0];
+      if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+          setError('File size must be less than 5MB');
+          return;
+        }
+        setEditingBooking({
+          ...editingBooking,
+          newAttachment: file // Store the new file separately
+        });
+      }
+    } else {
+      const value = e.target.type === 'datetime-local' && e.target.value
+        ? new Date(e.target.value).toISOString()
+        : e.target.value;
       
-    setEditingBooking({
-      ...editingBooking,
-      [e.target.name]: value,
-    });
+      setEditingBooking({
+        ...editingBooking,
+        [e.target.name]: value,
+      });
+    }
   };
 
   const formatDate = (dateString) => {
@@ -388,6 +416,32 @@ function BookingList() {
                           onChange={handleEditChange}
                           placeholder="Enter email address"
                         />
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="attachment">Attachment:</label>
+                        <input
+                          type="file"
+                          id="attachment"
+                          name="attachment"
+                          onChange={handleEditChange}
+                          accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+                        />
+                        <small className="file-hint">
+                          Supported files: PDF, DOC, DOCX, TXT, JPG, PNG (max 5MB)
+                        </small>
+                        {editingBooking.attachment_url && (
+                          <div className="current-attachment">
+                            <p>Current attachment: {editingBooking.attachment_name}</p>
+                            <a 
+                              href={editingBooking.attachment_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              View current attachment
+                            </a>
+                          </div>
+                        )}
                       </div>
 
                       <div className="button-group">

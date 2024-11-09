@@ -35,14 +35,14 @@ const upload = multer({
   }
 }).single('attachment');
 
-// Create a new booking - handle file upload before validation
+// Create a new booking
 router.post('/', verifyToken, upload, validateBooking, createBooking);
 
 // Get all bookings for the authenticated user
 router.get('/', verifyToken, getUserBookings);
 
-// Update a booking
-router.put('/:id', verifyToken, validateBooking, updateBooking);
+// Update a booking - Fix the middleware order here
+router.put('/:id', verifyToken, upload, validateBooking, updateBooking);
 
 // Delete a booking
 router.delete('/:id', verifyToken, deleteBooking);
@@ -63,7 +63,7 @@ router.get('/all', verifyToken, async (req, res) => {
   }
 });
 
-module.exports = router; 
+module.exports = router;
 
 
 

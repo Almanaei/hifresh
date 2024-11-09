@@ -92,6 +92,15 @@ async function updateBooking(req, res) {
       return res.status(404).json({ message: 'Booking not found' });
     }
 
+    // Handle new attachment if uploaded
+    let attachment_url = booking.rows[0].attachment_url;
+    let attachment_name = booking.rows[0].attachment_name;
+
+    if (req.file) {
+      attachment_url = `/uploads/${req.file.filename}`;
+      attachment_name = req.file.originalname;
+    }
+
     const result = await db.query(
       `UPDATE bookings 
        SET title = $1, 
@@ -101,10 +110,13 @@ async function updateBooking(req, res) {
            status = $5,
            mobile = $6,
            email = $7,
+           attachment_url = $8,
+           attachment_name = $9,
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $8 AND user_id = $9
-       RETURNING id, title, description, booking_date, visit_date, mobile, email, status`,
-      [title, description, booking_date, visit_date || null, status, mobile || null, email || null, id, userId]
+       WHERE id = $10 AND user_id = $11
+       RETURNING id, title, description, booking_date, visit_date, mobile, email, status, attachment_url, attachment_name`,
+      [title, description, booking_date, visit_date || null, status, mobile || null, email || null, 
+       attachment_url, attachment_name, id, userId]
     );
 
     res.json({

@@ -47,15 +47,14 @@ export const api = {
     return handleResponse(response);
   },
 
-  updateBooking: async (id, bookingData) => {
+  updateBooking: async (id, formData) => {
     const token = localStorage.getItem('token');
     const response = await fetch(`${API_URL}/bookings/${id}`, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify(bookingData),
+      body: formData,
     });
     return handleResponse(response);
   },
