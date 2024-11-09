@@ -160,24 +160,24 @@ function BookingList() {
   // Add this state for attachment viewing
   const [viewingAttachment, setViewingAttachment] = useState(null);
 
-  // Add this function to handle attachment clicks
+  // Update the handleAttachmentClick function
   const handleAttachmentClick = (e, attachment) => {
     e.preventDefault();
     const fileExtension = attachment.name.split('.').pop().toLowerCase();
-    const baseUrl = process.env.REACT_APP_API_URL.replace('/api', '');
+    const baseUrl = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:3000';
     const fullUrl = `${baseUrl}${attachment.url}`;
     
+    // PDF files - open in new tab
+    if (fileExtension === 'pdf') {
+      window.open(fullUrl, '_blank');
+    }
     // Image files - show in modal
-    if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+    else if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
       setViewingAttachment({
         ...attachment,
         url: fullUrl,
         type: 'image'
       });
-    } 
-    // PDF files - open in new tab
-    else if (fileExtension === 'pdf') {
-      window.open(fullUrl, '_blank');
     }
     // Other files - download
     else {
@@ -433,13 +433,16 @@ function BookingList() {
                         {editingBooking.attachment_url && (
                           <div className="current-attachment">
                             <p>Current attachment: {editingBooking.attachment_name}</p>
-                            <a 
-                              href={editingBooking.attachment_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <button
+                              type="button"
+                              onClick={(e) => handleAttachmentClick(e, {
+                                url: editingBooking.attachment_url,
+                                name: editingBooking.attachment_name
+                              })}
+                              className="attachment-button"
                             >
-                              View current attachment
-                            </a>
+                              View Current Attachment
+                            </button>
                           </div>
                         )}
                       </div>
