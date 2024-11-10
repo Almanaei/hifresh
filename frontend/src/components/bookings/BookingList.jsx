@@ -200,52 +200,45 @@ function BookingList() {
     if (!editingBooking) return null;
 
     return (
-      <div className="modal-overlay" onClick={() => setEditingBooking(null)}>
-        <div className="modal-content edit-booking-modal" onClick={e => e.stopPropagation()}>
+      <div className="modal-overlay">
+        <div className="modal-content">
           <div className="modal-header">
             <h3>Edit Booking</h3>
             <button 
               className="close-button" 
               onClick={() => setEditingBooking(null)}
-              aria-label="Close"
             >
               ×
             </button>
           </div>
 
-          <form onSubmit={handleUpdate} className="edit-booking-form">
-            <div className="form-grid">
+          <form onSubmit={handleUpdate}>
+            <div className="modal-body">
               <div className="form-group">
-                <label htmlFor="title">Title</label>
+                <label>Title</label>
                 <input
-                  id="title"
                   type="text"
                   name="title"
                   value={editingBooking.title}
                   onChange={handleEditChange}
-                  required
                   className="form-control"
-                  placeholder="Enter booking title"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="booking_date">Booking Date</label>
+                <label>Booking Date</label>
                 <input
-                  id="booking_date"
                   type="datetime-local"
                   name="booking_date"
                   value={editingBooking.booking_date}
                   onChange={handleEditChange}
-                  required
                   className="form-control"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="visit_date">Visit Date (Optional)</label>
+                <label>Visit Date (Optional)</label>
                 <input
-                  id="visit_date"
                   type="datetime-local"
                   name="visit_date"
                   value={editingBooking.visit_date || ''}
@@ -255,9 +248,8 @@ function BookingList() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="status">Status</label>
+                <label>Status</label>
                 <select
-                  id="status"
                   name="status"
                   value={editingBooking.status}
                   onChange={handleEditChange}
@@ -270,48 +262,40 @@ function BookingList() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="mobile">Mobile</label>
+                <label>Mobile</label>
                 <input
-                  id="mobile"
                   type="tel"
                   name="mobile"
                   value={editingBooking.mobile || ''}
                   onChange={handleEditChange}
                   className="form-control"
-                  placeholder="Enter mobile number"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="email">Email</label>
+                <label>Email</label>
                 <input
-                  id="email"
                   type="email"
                   name="email"
                   value={editingBooking.email || ''}
                   onChange={handleEditChange}
                   className="form-control"
-                  placeholder="Enter email address"
                 />
               </div>
-            </div>
 
-            <div className="form-group full-width">
-              <label htmlFor="description">Description</label>
-              <textarea
-                id="description"
-                name="description"
-                value={editingBooking.description || ''}
-                onChange={handleEditChange}
-                className="form-control"
-                rows="4"
-                placeholder="Enter booking description"
-              />
-            </div>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea
+                  name="description"
+                  value={editingBooking.description || ''}
+                  onChange={handleEditChange}
+                  className="form-control"
+                  rows="4"
+                />
+              </div>
 
-            <div className="form-group full-width">
-              <label htmlFor="attachment">Attachment</label>
-              <div className="attachment-section">
+              <div className="form-group">
+                <label>Attachment</label>
                 {editingBooking.attachment_url && (
                   <div className="current-attachment">
                     <span>Current: {editingBooking.attachment_name}</span>
@@ -319,14 +303,13 @@ function BookingList() {
                       href={editingBooking.attachment_url} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="view-attachment"
+                      className="view-link"
                     >
                       View
                     </a>
                   </div>
                 )}
                 <input
-                  id="attachment"
                   type="file"
                   onChange={(e) => {
                     setEditingBooking({
