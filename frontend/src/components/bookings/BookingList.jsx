@@ -196,6 +196,171 @@ function BookingList() {
     setViewingAttachment(null);
   };
 
+  const renderEditModal = () => {
+    if (!editingBooking) return null;
+
+    return (
+      <div className="modal-overlay" onClick={() => setEditingBooking(null)}>
+        <div className="modal-content edit-booking-modal" onClick={e => e.stopPropagation()}>
+          <div className="modal-header">
+            <h3>Edit Booking</h3>
+            <button 
+              className="close-button" 
+              onClick={() => setEditingBooking(null)}
+              aria-label="Close"
+            >
+              ×
+            </button>
+          </div>
+
+          <form onSubmit={handleUpdate} className="edit-booking-form">
+            <div className="form-grid">
+              <div className="form-group">
+                <label htmlFor="title">Title</label>
+                <input
+                  id="title"
+                  type="text"
+                  name="title"
+                  value={editingBooking.title}
+                  onChange={handleEditChange}
+                  required
+                  className="form-control"
+                  placeholder="Enter booking title"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="booking_date">Booking Date</label>
+                <input
+                  id="booking_date"
+                  type="datetime-local"
+                  name="booking_date"
+                  value={editingBooking.booking_date}
+                  onChange={handleEditChange}
+                  required
+                  className="form-control"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="visit_date">Visit Date (Optional)</label>
+                <input
+                  id="visit_date"
+                  type="datetime-local"
+                  name="visit_date"
+                  value={editingBooking.visit_date || ''}
+                  onChange={handleEditChange}
+                  className="form-control"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="status">Status</label>
+                <select
+                  id="status"
+                  name="status"
+                  value={editingBooking.status}
+                  onChange={handleEditChange}
+                  className="form-control"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="mobile">Mobile</label>
+                <input
+                  id="mobile"
+                  type="tel"
+                  name="mobile"
+                  value={editingBooking.mobile || ''}
+                  onChange={handleEditChange}
+                  className="form-control"
+                  placeholder="Enter mobile number"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="email">Email</label>
+                <input
+                  id="email"
+                  type="email"
+                  name="email"
+                  value={editingBooking.email || ''}
+                  onChange={handleEditChange}
+                  className="form-control"
+                  placeholder="Enter email address"
+                />
+              </div>
+            </div>
+
+            <div className="form-group full-width">
+              <label htmlFor="description">Description</label>
+              <textarea
+                id="description"
+                name="description"
+                value={editingBooking.description || ''}
+                onChange={handleEditChange}
+                className="form-control"
+                rows="4"
+                placeholder="Enter booking description"
+              />
+            </div>
+
+            <div className="form-group full-width">
+              <label htmlFor="attachment">Attachment</label>
+              <div className="attachment-section">
+                {editingBooking.attachment_url && (
+                  <div className="current-attachment">
+                    <span>Current: {editingBooking.attachment_name}</span>
+                    <a 
+                      href={editingBooking.attachment_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="view-attachment"
+                    >
+                      View
+                    </a>
+                  </div>
+                )}
+                <input
+                  id="attachment"
+                  type="file"
+                  onChange={(e) => {
+                    setEditingBooking({
+                      ...editingBooking,
+                      newAttachment: e.target.files[0]
+                    });
+                  }}
+                  className="form-control"
+                />
+                <span className="file-hint">Max file size: 5MB</span>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button 
+                type="button" 
+                onClick={() => setEditingBooking(null)}
+                className="cancel-button"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                className="save-button"
+              >
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
   if (loading) return <div>Loading bookings...</div>;
   if (error) return <div className="error-message">{error}</div>;
 
@@ -777,6 +942,7 @@ function BookingList() {
           </div>
         </div>
       )}
+      {renderEditModal()}
     </div>
   );
 }
