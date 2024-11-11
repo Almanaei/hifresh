@@ -3,6 +3,7 @@ import api from '../../services/api';
 import Pagination from '../common/Pagination';
 import './BookingList.css';
 import { useTheme } from '../../context/ThemeContext';
+import BookingCalendar from './BookingCalendar';
 
 function BookingList() {
   const { isDarkMode } = useTheme();
@@ -1021,6 +1022,8 @@ function BookingList() {
 
       {/* Add the modal render here */}
       {renderEditModal()}
+
+      <BookingCalendar bookings={bookings} />
     </div>
   );
 }

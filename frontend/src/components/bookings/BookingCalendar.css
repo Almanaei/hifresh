@@ -1,0 +1,206 @@
+.booking-calendar {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.calendar-header button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.calendar-header button:hover {
+  background-color: #f3f4f6;
+}
+
+.calendar-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background-color: #e5e7eb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.calendar-weekday {
+  background-color: #f3f4f6;
+  padding: 12px;
+  text-align: center;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.calendar-day {
+  background-color: white;
+  aspect-ratio: 1;
+  padding: 8px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.calendar-day:hover {
+  background-color: #f3f4f6;
+}
+
+.calendar-day.other-month {
+  color: #9ca3af;
+}
+
+.calendar-day.selected {
+  background-color: #e0f2fe;
+}
+
+.calendar-day.has-bookings {
+  font-weight: 500;
+}
+
+.day-number {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+}
+
+.booking-indicators {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.booking-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.booking-dot.status-pending {
+  background-color: #fbbf24;
+}
+
+.booking-dot.status-confirmed {
+  background-color: #10b981;
+}
+
+.booking-dot.status-cancelled {
+  background-color: #ef4444;
+}
+
+.selected-date-bookings {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.selected-date-bookings h4 {
+  margin: 0 0 16px 0;
+  font-size: 1.1rem;
+  color: #374151;
+}
+
+.bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.booking-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: #f9fafb;
+}
+
+.booking-time {
+  font-weight: 500;
+  color: #6b7280;
+  min-width: 80px;
+}
+
+.booking-title {
+  flex: 1;
+  font-weight: 500;
+}
+
+.booking-status {
+  padding: 4px 8px;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.booking-status.status-pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.booking-status.status-confirmed {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.booking-status.status-cancelled {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* Dark theme support */
+.dark-theme .booking-calendar {
+  background: #1f2937;
+}
+
+.dark-theme .calendar-header button:hover {
+  background-color: #374151;
+}
+
+.dark-theme .calendar-weekday {
+  background-color: #374151;
+  color: #e5e7eb;
+}
+
+.dark-theme .calendar-day {
+  background-color: #1f2937;
+  color: #e5e7eb;
+}
+
+.dark-theme .calendar-day:hover {
+  background-color: #374151;
+}
+
+.dark-theme .calendar-day.other-month {
+  color: #6b7280;
+}
+
+.dark-theme .calendar-day.selected {
+  background-color: #1e40af;
+}
+
+.dark-theme .booking-item {
+  background-color: #374151;
+} 
