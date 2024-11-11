@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import api from '../../services/api';
 import './CertificatePage.css';
 
 function CertificatePage() {
+  const { isDarkMode } = useTheme();
   const [certificates, setCertificates] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -70,7 +72,7 @@ function CertificatePage() {
   if (loading) return <div className="loading-state">Loading...</div>;
 
   return (
-    <div className="certificate-page">
+    <div className={`certificate-page ${isDarkMode ? 'dark-theme' : ''}`}>
       <h2>Certificate Management</h2>
 
       <div className="certificate-generator">
@@ -104,26 +106,43 @@ function CertificatePage() {
           disabled={generating || !selectedBooking}
           className="generate-button"
         >
-          {generating ? 'Generating...' : 'Generate Certificate'}
+          {generating ? (
+            <span className="loading-text">
+              <span className="loading-spinner"></span>
+              Generating...
+            </span>
+          ) : (
+            'Generate Certificate'
+          )}
         </button>
       </div>
 
-      {error && <p className="error-message">{error}</p>}
+      {error && <div className="error-message">{error}</div>}
 
       <div className="certificates-list">
         <div className="list-header">
           <h3>Generated Certificates</h3>
-          <input
-            type="text"
-            placeholder="Search certificates..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
+          <div className="search-wrapper">
+            <input
+              type="text"
+              placeholder="Search certificates..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+            <span className="search-icon">🔍</span>
+          </div>
         </div>
 
-        {filteredCertificates.length === 0 ? (
-          <p className="no-certificates">No certificates generated yet.</p>
+        {loading ? (
+          <div className="loading-state">
+            <div className="loading-spinner"></div>
+            <p>Loading certificates...</p>
+          </div>
+        ) : filteredCertificates.length === 0 ? (
+          <div className="empty-state">
+            <p>No certificates found</p>
+          </div>
         ) : (
           <div className="table-container">
             <table className="certificates-table">
@@ -148,6 +167,7 @@ function CertificatePage() {
                         onClick={() => handleViewCertificate(cert.pdf_url)}
                         className="view-button"
                       >
+                        <span className="button-icon">📄</span>
                         View Certificate
                       </button>
                     </td>

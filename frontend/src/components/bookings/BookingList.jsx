@@ -571,13 +571,40 @@ function BookingList() {
     );
   };
 
+  // Add this state at the beginning of your component
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedMode = localStorage.getItem('darkMode');
+    return savedMode ? JSON.parse(savedMode) : false;
+  });
+
+  // Add this effect to handle system preference changes
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e) => {
+      setIsDarkMode(e.matches);
+      localStorage.setItem('darkMode', JSON.stringify(e.matches));
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  // Add this function to toggle dark mode
+  const toggleDarkMode = () => {
+    setIsDarkMode(prev => {
+      const newMode = !prev;
+      localStorage.setItem('darkMode', JSON.stringify(newMode));
+      return newMode;
+    });
+  };
+
   if (loading) return <div>Loading bookings...</div>;
   if (error) return <div className="error-message">{error}</div>;
 
   const filteredBookings = filterBookings(bookings);
 
   return (
-    <div className="booking-list">
+    <div className={`booking-list ${isDarkMode ? 'dark-theme' : 'light-theme'}`}>
       <h2>Your Bookings</h2>
 
       {/* Filter and Sort Controls */}
@@ -629,6 +656,14 @@ function BookingList() {
               List View
             </button>
           </div>
+
+          <button 
+            className={`theme-toggle ${isDarkMode ? 'dark' : 'light'}`}
+            onClick={toggleDarkMode}
+            aria-label="Toggle dark mode"
+          >
+            {isDarkMode ? '🌙' : '☀️'}
+          </button>
         </div>
       </div>
 

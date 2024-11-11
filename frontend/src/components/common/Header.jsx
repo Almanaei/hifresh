@@ -1,21 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useTheme } from '../../context/ThemeContext';
 import './Header.css';
 
 function Header({ isAuthenticated, onLogout }) {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const { isDarkMode, toggleDarkMode } = useTheme();
 
   const handleLogout = () => {
     onLogout();
@@ -26,7 +18,7 @@ function Header({ isAuthenticated, onLogout }) {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <header className={`app-header ${isScrolled ? 'scrolled' : ''}`}>
+    <header className={`app-header ${isDarkMode ? 'dark-theme' : ''}`}>
       <div className="header-container">
         <div className="header-left">
           <Link to="/" className="logo">
@@ -35,15 +27,25 @@ function Header({ isAuthenticated, onLogout }) {
           </Link>
         </div>
 
-        <button 
-          className={`mobile-menu-button ${isMobileMenuOpen ? 'active' : ''}`}
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
+        <div className="header-right">
+          <button 
+            className="theme-toggle"
+            onClick={toggleDarkMode}
+            aria-label="Toggle dark mode"
+          >
+            {isDarkMode ? '🌙' : '☀️'}
+          </button>
+
+          <button 
+            className={`mobile-menu-button ${isMobileMenuOpen ? 'active' : ''}`}
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
 
         <nav className={`header-nav ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
           {isAuthenticated ? (
@@ -87,14 +89,6 @@ function Header({ isAuthenticated, onLogout }) {
               >
                 <span className="nav-icon">👥</span>
                 Users
-              </Link>
-              <Link 
-                to="/reports" 
-                className={`nav-link ${isActive('/reports') ? 'active' : ''}`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <span className="nav-icon">📊</span>
-                Reports
               </Link>
               <Link 
                 to="/analytics" 

@@ -1,0 +1,58 @@
+:root {
+  /* Light Theme Variables */
+  --background-primary: #ffffff;
+  --background-secondary: #f8fafc;
+  --text-primary: #1f2937;
+  --text-secondary: #4b5563;
+  --border-color: #e5e7eb;
+  --card-background: #ffffff;
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --input-background: #ffffff;
+  --hover-background: rgba(0, 0, 0, 0.05);
+  --modal-overlay: rgba(0, 0, 0, 0.5);
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --info-color: #3b82f6;
+
+  /* Component-specific colors */
+  --header-background: rgba(255, 255, 255, 0.98);
+  --header-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --nav-link-hover: #f3f4f6;
+  --button-primary: #3b82f6;
+  --button-primary-hover: #2563eb;
+  --table-header: #f9fafb;
+  --table-row-hover: #f3f4f6;
+}
+
+[data-theme="dark"] {
+  /* Dark Theme Variables */
+  --background-primary: #1a1a1a;
+  --background-secondary: #2d2d2d;
+  --text-primary: #e5e7eb;
+  --text-secondary: #9ca3af;
+  --border-color: #404040;
+  --card-background: #2d2d2d;
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  --input-background: #404040;
+  --hover-background: rgba(255, 255, 255, 0.1);
+  --modal-overlay: rgba(0, 0, 0, 0.7);
+  --success-color: #059669;
+  --warning-color: #d97706;
+  --danger-color: #dc2626;
+  --info-color: #2563eb;
+
+  /* Component-specific colors */
+  --header-background: rgba(26, 26, 26, 0.98);
+  --header-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  --nav-link-hover: #404040;
+  --button-primary: #2563eb;
+  --button-primary-hover: #1d4ed8;
+  --table-header: #2d2d2d;
+  --table-row-hover: #404040;
+}
+
+/* Transition for theme changes */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+} 

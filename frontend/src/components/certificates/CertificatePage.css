@@ -3,19 +3,54 @@
   padding: 20px;
   max-width: 1400px;
   margin: 0 auto;
+  background-color: var(--background-primary);
+  color: var(--text-primary);
 }
 
+.certificate-page h2 {
+  color: var(--text-primary);
+  margin-bottom: 30px;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+/* Certificate Generator Section */
 .certificate-generator {
-  background: white;
+  background: var(--card-background);
   padding: 30px;
   border-radius: 12px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--card-shadow);
   margin-bottom: 30px;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .certificate-generator h3 {
-  color: var(--dark-gray);
+  color: var(--text-primary);
   margin-bottom: 20px;
+  font-size: 1.4rem;
+  font-weight: 500;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  font-weight: 500;
 }
 
 .booking-select {
@@ -23,41 +58,62 @@
   padding: 12px;
   border: 2px solid var(--border-color);
   border-radius: 8px;
-  margin-top: 10px;
+  background: var(--input-background);
+  color: var(--text-primary);
   font-size: 1rem;
-  color: var(--dark-gray);
+  transition: all 0.2s ease;
+}
+
+.booking-select:hover {
+  border-color: var(--button-primary-hover);
+}
+
+.booking-select:focus {
+  border-color: var(--button-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.field-hint {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  display: block;
 }
 
 .generate-button {
   width: 100%;
   padding: 12px 24px;
-  background-color: var(--success-color);
+  background: linear-gradient(45deg, var(--button-primary), var(--button-primary-hover));
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  margin-top: 20px;
-  transition: var(--transition);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
-.generate-button:hover {
-  background-color: #218838;
-  transform: translateY(-1px);
+.generate-button:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
 }
 
 .generate-button:disabled {
-  background-color: var(--gray);
+  background: var(--text-secondary);
   cursor: not-allowed;
-  transform: none;
 }
 
+/* Certificates List Section */
 .certificates-list {
-  background: white;
+  background: var(--card-background);
   padding: 30px;
   border-radius: 12px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--card-shadow);
 }
 
 .list-header {
@@ -70,69 +126,165 @@
 }
 
 .list-header h3 {
-  color: var(--dark-gray);
+  color: var(--text-primary);
+  font-size: 1.4rem;
+  font-weight: 500;
+}
+
+.search-wrapper {
+  position: relative;
+  flex: 1;
+  max-width: 400px;
 }
 
 .search-input {
-  padding: 10px;
+  width: 100%;
+  padding: 12px 16px 12px 40px;
   border: 2px solid var(--border-color);
-  border-radius: 6px;
-  min-width: 300px;
-  font-size: 1rem;
+  border-radius: 8px;
+  background: var(--input-background);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  border-color: var(--button-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+/* Table Styling */
+.table-container {
+  overflow-x: auto;
 }
 
 .certificates-table {
   width: 100%;
   border-collapse: collapse;
+  margin-top: 20px;
 }
 
 .certificates-table th,
 .certificates-table td {
-  padding: 15px;
+  padding: 16px;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
 }
 
 .certificates-table th {
-  background-color: var(--light-gray);
+  background: var(--background-secondary);
   font-weight: 600;
-  color: var(--dark-gray);
+  color: var(--text-primary);
+}
+
+.certificates-table tr:hover {
+  background: var(--hover-background);
 }
 
 .view-button {
   padding: 8px 16px;
-  background-color: var(--primary-color);
+  background: var(--button-primary);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
 }
 
 .view-button:hover {
-  background-color: var(--primary-hover);
+  background: var(--button-primary-hover);
   transform: translateY(-1px);
 }
 
-.no-certificates {
+/* Loading States */
+.loading-state {
   text-align: center;
-  color: var(--gray);
-  padding: 30px;
+  padding: 40px;
+  color: var(--text-secondary);
 }
 
+.loading-spinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--button-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px;
+}
+
+.loading-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+  background: var(--background-secondary);
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+/* Error Message */
+.error-message {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger-color);
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
   .list-header {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .search-input {
-    width: 100%;
-    min-width: unset;
+  .search-wrapper {
+    max-width: none;
   }
 
   .certificates-table {
-    display: block;
-    overflow-x: auto;
+    font-size: 0.875rem;
+  }
+
+  .view-button {
+    padding: 6px 12px;
   }
 } 
