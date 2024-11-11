@@ -138,19 +138,21 @@
 
 /* Booking Card */
 .booking-card {
-  position: relative;
-  background: var(--card-background);
+  background: linear-gradient(145deg, #ffffff, #e6f3ff);
   border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: var(--card-shadow);
+  border: 1px solid rgba(59, 130, 246, 0.1);
 }
 
 .booking-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 
-    0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(59, 130, 246, 0.1);
+  background: linear-gradient(145deg, #ffffff, #d9edff);
 }
 
 .booking-card-header {
@@ -1508,4 +1510,27 @@ input[type="file"] {
 
 .bookings-table tr:hover {
   background: var(--hover-background);
+}
+
+/* Time-based backgrounds - update with blue tints */
+.booking-card[data-time="morning"] {
+  background: linear-gradient(145deg, #ffffff, #e6f3ff);
+}
+
+.booking-card[data-time="afternoon"] {
+  background: linear-gradient(145deg, #ffffff, #e1f0ff);
+}
+
+.booking-card[data-time="evening"] {
+  background: linear-gradient(145deg, #ffffff, #dbeeff);
+}
+
+/* Dark theme adjustments */
+.dark-theme .booking-card {
+  background: linear-gradient(145deg, #2d3748, #1a365d);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.dark-theme .booking-card:hover {
+  background: linear-gradient(145deg, #2d3748, #1e4976);
 }
