@@ -229,10 +229,12 @@
 /* Card Actions */
 .booking-card-actions {
   padding: 16px 24px;
-  background: #f8fafc;
+  background: transparent;
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+  border-top: 1px solid rgba(59, 130, 246, 0.1);
+  margin-top: 16px;
 }
 
 /* Responsive Design */
@@ -827,7 +829,6 @@ input[type="file"] {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: transparent;
 }
 
 .action-button:hover {
@@ -1533,4 +1534,97 @@ input[type="file"] {
 
 .dark-theme .booking-card:hover {
   background: linear-gradient(145deg, #2d3748, #1e4976);
+}
+
+/* Update the action buttons styling */
+.action-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* View button */
+.view-button {
+  background: #3b82f6;  /* Blue background */
+  color: white;
+}
+
+.view-button:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+}
+
+/* Edit button */
+.edit-button {
+  background: #10b981;  /* Green background */
+  color: white;
+}
+
+.edit-button:hover {
+  background: #059669;
+  transform: translateY(-2px);
+}
+
+/* Delete button */
+.delete-button {
+  background: #ef4444;  /* Red background */
+  color: white;
+}
+
+.delete-button:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+}
+
+/* Save button */
+.save-button {
+  background: #3b82f6;
+  color: white;
+}
+
+.save-button:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+}
+
+/* Cancel button */
+.cancel-button {
+  background: #6b7280;  /* Gray background */
+  color: white;
+}
+
+.cancel-button:hover {
+  background: #4b5563;
+  transform: translateY(-2px);
+}
+
+/* Dark theme adjustments */
+.dark-theme .action-button {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.dark-theme .view-button {
+  background: #2563eb;
+}
+
+.dark-theme .edit-button {
+  background: #059669;
+}
+
+.dark-theme .delete-button {
+  background: #dc2626;
+}
+
+.dark-theme .save-button {
+  background: #2563eb;
+}
+
+.dark-theme .cancel-button {
+  background: #4b5563;
 }
