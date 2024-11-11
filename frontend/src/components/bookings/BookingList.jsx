@@ -196,6 +196,228 @@ function BookingList() {
     setViewingAttachment(null);
   };
 
+  const getTimeOfDay = (date) => {
+    const hours = new Date(date).getHours();
+    if (hours < 12) return 'morning';
+    if (hours < 17) return 'afternoon';
+    return 'evening';
+  };
+
+  const getPriority = (booking) => {
+    const now = new Date();
+    const bookingDate = new Date(booking.booking_date);
+    const diffDays = Math.ceil((bookingDate - now) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays <= 1) return 'high';
+    if (diffDays <= 3) return 'medium';
+    return 'low';
+  };
+
+  const renderBookingCard = (booking) => {
+    const timeOfDay = getTimeOfDay(booking.booking_date);
+    const priority = getPriority(booking);
+    const isEditing = editingBooking?.id === booking.id;
+
+    return (
+      <div 
+        className={`booking-card ${loading ? 'loading' : ''}`}
+        data-time={timeOfDay}
+        data-priority={priority}
+        key={booking.id}
+      >
+        {isEditing ? (
+          // Expanded Edit Form
+          <div className="booking-edit-form">
+            <div className="form-group">
+              <label>Title</label>
+              <input
+                type="text"
+                name="title"
+                value={editingBooking.title}
+                onChange={handleEditChange}
+                className="form-control"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Booking Date</label>
+              <input
+                type="datetime-local"
+                name="booking_date"
+                value={editingBooking.booking_date}
+                onChange={handleEditChange}
+                className="form-control"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Visit Date (Optional)</label>
+              <input
+                type="datetime-local"
+                name="visit_date"
+                value={editingBooking.visit_date || ''}
+                onChange={handleEditChange}
+                className="form-control"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Status</label>
+              <select
+                name="status"
+                value={editingBooking.status}
+                onChange={handleEditChange}
+                className="form-control"
+              >
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Mobile</label>
+              <input
+                type="tel"
+                name="mobile"
+                value={editingBooking.mobile || ''}
+                onChange={handleEditChange}
+                className="form-control"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Email</label>
+              <input
+                type="email"
+                name="email"
+                value={editingBooking.email || ''}
+                onChange={handleEditChange}
+                className="form-control"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Description</label>
+              <textarea
+                name="description"
+                value={editingBooking.description || ''}
+                onChange={handleEditChange}
+                className="form-control"
+                rows="4"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Attachment</label>
+              {editingBooking.attachment_url && (
+                <div className="current-attachment">
+                  <span>Current: {editingBooking.attachment_name}</span>
+                  <a 
+                    href={editingBooking.attachment_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="view-link"
+                  >
+                    View
+                  </a>
+                </div>
+              )}
+              <input
+                type="file"
+                onChange={(e) => {
+                  setEditingBooking({
+                    ...editingBooking,
+                    newAttachment: e.target.files[0]
+                  });
+                }}
+                className="form-control"
+              />
+              <span className="file-hint">Max file size: 5MB</span>
+            </div>
+
+            <div className="button-group">
+              <button 
+                onClick={() => setEditingBooking(null)} 
+                className="cancel-button"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleUpdate}
+                className="save-button"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="booking-card-content">
+            <div className="booking-card-header">
+              <h3>{booking.title}</h3>
+              <span className={`priority-badge priority-${priority}`}>
+                {priority === 'high' && '🔥'}
+                {priority === 'medium' && '⏰'}
+                {priority === 'low' && '📅'}
+              </span>
+            </div>
+            
+            <div className="booking-card-body">
+              <p className="description">{booking.description}</p>
+              <div className="booking-meta">
+                <span className="meta-item">
+                  {timeOfDay === 'morning' && '🌅'}
+                  {timeOfDay === 'afternoon' && '☀️'}
+                  {timeOfDay === 'evening' && '🌙'}
+                  {new Date(booking.booking_date).toLocaleString()}
+                </span>
+                <span className={`status status-${booking.status}`}>
+                  {booking.status}
+                </span>
+              </div>
+              
+              {booking.attachment_url && (
+                <div className="attachment-preview-wrapper">
+                  <div 
+                    className="attachment-preview"
+                    onClick={(e) => handleAttachmentClick(e, {
+                      url: booking.attachment_url,
+                      name: booking.attachment_name
+                    })}
+                  >
+                    <span className="attachment-icon">📎</span>
+                    <span className="attachment-name">{booking.attachment_name}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="booking-card-actions">
+              <button 
+                className="action-button view-button"
+                onClick={() => handleView(booking)}
+              >
+                🔍 View
+              </button>
+              <button 
+                className="action-button edit-button"
+                onClick={() => handleEdit(booking)}
+              >
+                ✏️ Edit
+              </button>
+              <button 
+                className="action-button delete-button"
+                onClick={() => handleDelete(booking.id)}
+              >
+                🗑️ Delete
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderEditModal = () => {
     if (!editingBooking) return null;
 
@@ -212,133 +434,138 @@ function BookingList() {
             </button>
           </div>
 
-          <form onSubmit={handleUpdate}>
-            <div className="modal-body">
-              <div className="form-group">
-                <label>Title</label>
-                <input
-                  type="text"
-                  name="title"
-                  value={editingBooking.title}
-                  onChange={handleEditChange}
-                  className="form-control"
-                />
+          <form onSubmit={handleUpdate} className="modal-body">
+            <div className="form-grid">
+              {/* First Column */}
+              <div className="form-column">
+                <div className="form-group">
+                  <label>Title</label>
+                  <input
+                    type="text"
+                    name="title"
+                    value={editingBooking.title}
+                    onChange={handleEditChange}
+                    className="form-control dark-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Booking Date</label>
+                  <input
+                    type="datetime-local"
+                    name="booking_date"
+                    value={editingBooking.booking_date}
+                    onChange={handleEditChange}
+                    className="form-control dark-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Visit Date (Optional)</label>
+                  <input
+                    type="datetime-local"
+                    name="visit_date"
+                    value={editingBooking.visit_date || ''}
+                    onChange={handleEditChange}
+                    className="form-control dark-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Status</label>
+                  <select
+                    name="status"
+                    value={editingBooking.status}
+                    onChange={handleEditChange}
+                    className="form-control dark-input"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
               </div>
 
-              <div className="form-group">
-                <label>Booking Date</label>
-                <input
-                  type="datetime-local"
-                  name="booking_date"
-                  value={editingBooking.booking_date}
-                  onChange={handleEditChange}
-                  className="form-control"
-                />
-              </div>
+              {/* Second Column */}
+              <div className="form-column">
+                <div className="form-group">
+                  <label>Mobile</label>
+                  <input
+                    type="tel"
+                    name="mobile"
+                    value={editingBooking.mobile || ''}
+                    onChange={handleEditChange}
+                    className="form-control dark-input"
+                  />
+                </div>
 
-              <div className="form-group">
-                <label>Visit Date (Optional)</label>
-                <input
-                  type="datetime-local"
-                  name="visit_date"
-                  value={editingBooking.visit_date || ''}
-                  onChange={handleEditChange}
-                  className="form-control"
-                />
-              </div>
+                <div className="form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={editingBooking.email || ''}
+                    onChange={handleEditChange}
+                    className="form-control dark-input"
+                  />
+                </div>
 
-              <div className="form-group">
-                <label>Status</label>
-                <select
-                  name="status"
-                  value={editingBooking.status}
-                  onChange={handleEditChange}
-                  className="form-control"
-                >
-                  <option value="pending">Pending</option>
-                  <option value="confirmed">Confirmed</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
-              </div>
+                <div className="form-group">
+                  <label>Description</label>
+                  <textarea
+                    name="description"
+                    value={editingBooking.description || ''}
+                    onChange={handleEditChange}
+                    className="form-control dark-input"
+                    rows="4"
+                  />
+                </div>
 
-              <div className="form-group">
-                <label>Mobile</label>
-                <input
-                  type="tel"
-                  name="mobile"
-                  value={editingBooking.mobile || ''}
-                  onChange={handleEditChange}
-                  className="form-control"
-                />
+                <div className="form-group">
+                  <label>Attachment</label>
+                  {editingBooking.attachment_url && (
+                    <div className="current-attachment">
+                      <span>Current: {editingBooking.attachment_name}</span>
+                      <a 
+                        href={editingBooking.attachment_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="view-link"
+                      >
+                        View
+                      </a>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    onChange={(e) => {
+                      setEditingBooking({
+                        ...editingBooking,
+                        newAttachment: e.target.files[0]
+                      });
+                    }}
+                    className="form-control dark-input"
+                  />
+                  <span className="file-hint">Max file size: 5MB</span>
+                </div>
               </div>
-
-              <div className="form-group">
-                <label>Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={editingBooking.email || ''}
-                  onChange={handleEditChange}
-                  className="form-control"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Description</label>
-                <textarea
-                  name="description"
-                  value={editingBooking.description || ''}
-                  onChange={handleEditChange}
-                  className="form-control"
-                  rows="4"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Attachment</label>
-                {editingBooking.attachment_url && (
-                  <div className="current-attachment">
-                    <span>Current: {editingBooking.attachment_name}</span>
-                    <a 
-                      href={editingBooking.attachment_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="view-link"
-                    >
-                      View
-                    </a>
-                  </div>
-                )}
-                <input
-                  type="file"
-                  onChange={(e) => {
-                    setEditingBooking({
-                      ...editingBooking,
-                      newAttachment: e.target.files[0]
-                    });
-                  }}
-                  className="form-control"
-                />
-                <span className="file-hint">Max file size: 5MB</span>
-              </div>
-            </div>
-
-            <div className="modal-footer">
-              <button 
-                type="button" 
-                onClick={() => setEditingBooking(null)}
-                className="cancel-button"
-              >
-                Cancel
-              </button>
-              <button 
-                type="submit" 
-                className="save-button"
-              >
-                Save Changes
-              </button>
             </div>
           </form>
+
+          <div className="modal-footer">
+            <button 
+              onClick={() => setEditingBooking(null)}
+              className="cancel-button"
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={handleUpdate}
+              className="save-button"
+            >
+              Save Changes
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -600,176 +827,7 @@ function BookingList() {
             </div>
           ) : (
             <div className="bookings-grid">
-              {filteredBookings.map((booking) => (
-                <div key={booking.id} className="booking-card">
-                  {editingBooking && editingBooking.id === booking.id ? (
-                    <form onSubmit={handleUpdate} className="edit-form">
-                      <div className="form-group">
-                        <label>Title:</label>
-                        <input
-                          type="text"
-                          name="title"
-                          value={editingBooking.title}
-                          onChange={handleEditChange}
-                          required
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Description:</label>
-                        <textarea
-                          name="description"
-                          value={editingBooking.description || ''}
-                          onChange={handleEditChange}
-                          rows="4"
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Date:</label>
-                        <input
-                          type="datetime-local"
-                          name="booking_date"
-                          value={editingBooking.booking_date}
-                          onChange={handleEditChange}
-                          required
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Status:</label>
-                        <select
-                          name="status"
-                          value={editingBooking.status}
-                          onChange={handleEditChange}
-                        >
-                          <option value="pending">Pending</option>
-                          <option value="confirmed">Confirmed</option>
-                          <option value="cancelled">Cancelled</option>
-                        </select>
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="visit_date">Visit Date:</label>
-                        <input
-                          type="datetime-local"
-                          id="visit_date"
-                          name="visit_date"
-                          value={editingBooking.visit_date ? new Date(editingBooking.visit_date).toISOString().slice(0, 16) : ''}
-                          onChange={handleEditChange}
-                          min={editingBooking.booking_date ? new Date(editingBooking.booking_date).toISOString().slice(0, 16) : ''}
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label htmlFor="mobile">Mobile:</label>
-                        <input
-                          type="tel"
-                          id="mobile"
-                          name="mobile"
-                          value={editingBooking.mobile || ''}
-                          onChange={handleEditChange}
-                          placeholder="Enter mobile number"
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label htmlFor="email">Email:</label>
-                        <input
-                          type="email"
-                          id="email"
-                          name="email"
-                          value={editingBooking.email || ''}
-                          onChange={handleEditChange}
-                          placeholder="Enter email address"
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label htmlFor="attachment">Attachment:</label>
-                        <input
-                          type="file"
-                          id="attachment"
-                          name="attachment"
-                          onChange={handleEditChange}
-                          accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
-                        />
-                        <small className="file-hint">
-                          Supported files: PDF, DOC, DOCX, TXT, JPG, PNG (max 5MB)
-                        </small>
-                        {editingBooking.attachment_url && (
-                          <div className="current-attachment">
-                            <p>Current attachment: {editingBooking.attachment_name}</p>
-                            <button
-                              type="button"
-                              onClick={(e) => handleAttachmentClick(e, {
-                                url: editingBooking.attachment_url,
-                                name: editingBooking.attachment_name
-                              })}
-                              className="attachment-button"
-                            >
-                              View Current Attachment
-                            </button>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="button-group">
-                        <button type="submit">Save</button>
-                        <button 
-                          type="button" 
-                          onClick={() => setEditingBooking(null)}
-                          className="cancel-button"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </form>
-                  ) : (
-                    <>
-                      <h3>{booking.title}</h3>
-                      <p className="description">{booking.description}</p>
-                      <p className="date">
-                        <strong>Date:</strong> {formatDate(booking.booking_date)}
-                      </p>
-                      <p className={`status status-${booking.status}`}>
-                        <strong>Status:</strong> {booking.status}
-                      </p>
-                      {booking.attachment_url && (
-                        <p className="attachment">
-                          <strong>Attachment:</strong>{' '}
-                          <a 
-                            href={booking.attachment_url}
-                            onClick={(e) => handleAttachmentClick(e, {
-                              url: booking.attachment_url,
-                              name: booking.attachment_name
-                            })}
-                            className="attachment-link"
-                          >
-                            {booking.attachment_name}
-                          </a>
-                        </p>
-                      )}
-                      <div className="button-group">
-                        <button 
-                          onClick={() => handleView(booking)}
-                          className="view-button"
-                        >
-                          View Details
-                        </button>
-                        <button 
-                          onClick={() => handleEdit(booking)}
-                          className="edit-button"
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(booking.id)}
-                          className="delete-button"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ))}
+              {filteredBookings.map(booking => renderBookingCard(booking))}
             </div>
           )}
         </>
@@ -925,6 +983,8 @@ function BookingList() {
           </div>
         </div>
       )}
+
+      {/* Add the modal render here */}
       {renderEditModal()}
     </div>
   );
