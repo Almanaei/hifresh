@@ -123,22 +123,20 @@ export const api = {
   },
 
   createBackup: async (period) => {
-    const token = localStorage.getItem('token');
     const response = await fetch(`${API_URL}/backups/${period}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
-      },
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
     });
     return handleResponse(response);
   },
 
   getBackups: async () => {
-    const token = localStorage.getItem('token');
     const response = await fetch(`${API_URL}/backups`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
-      },
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
     });
     return handleResponse(response);
   },
@@ -255,6 +253,25 @@ export const api = {
       },
     });
     return handleResponse(response);
+  },
+
+  downloadBackup: async (fileName) => {
+    try {
+      const response = await fetch(`${API_URL}/backups/download/${fileName}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to download backup');
+      }
+      
+      return response.blob();
+    } catch (error) {
+      throw new Error(error.message || 'Failed to download backup');
+    }
   },
 };
 

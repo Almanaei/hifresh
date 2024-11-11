@@ -122,22 +122,34 @@
 }
 
 .download-button {
-  padding: 8px 16px;
-  background: var(--button-primary);
+  background-color: #4CAF50;
   color: white;
   border: none;
-  border-radius: 6px;
+  padding: 8px 16px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.875rem;
+  gap: 8px;
+  transition: all 0.2s ease;
 }
 
 .download-button:hover {
-  background: var(--button-primary-hover);
+  background-color: #45a049;
   transform: translateY(-1px);
+}
+
+.download-button:active {
+  transform: translateY(0);
+}
+
+.download-button .button-icon {
+  font-size: 1.1em;
+}
+
+.download-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }
 
 .loading-state {

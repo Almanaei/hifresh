@@ -62,6 +62,22 @@ function BackupPage() {
   const currentBackups = backups.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(backups.length / itemsPerPage);
 
+  const handleDownload = async (fileName) => {
+    try {
+      const blob = await api.downloadBackup(fileName);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   if (loading) return (
     <div className={`backup-page ${isDarkMode ? 'dark-theme' : ''}`}>
       <div className="loading-state">
@@ -137,7 +153,10 @@ function BackupPage() {
                       <td>{formatDate(backup.createdAt)}</td>
                       <td>{formatSize(backup.size)}</td>
                       <td>
-                        <button className="download-button">
+                        <button 
+                          onClick={() => handleDownload(backup.fileName)}
+                          className="download-button"
+                        >
                           <span className="button-icon">💾</span>
                           Download
                         </button>

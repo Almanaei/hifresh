@@ -20,7 +20,8 @@ app.use('/uploads', express.static('uploads'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/bookings', require('./routes/bookingRoutes'));
 app.use('/api/certificates', require('./routes/certificateRoutes'));
-app.use('/api/backups', require('./routes/backupRoutes'));
+const backupRoutes = require('./routes/backupRoutes');
+app.use('/api/backups', backupRoutes);
 app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/analytics', require('./routes/analyticsRoutes'));
 

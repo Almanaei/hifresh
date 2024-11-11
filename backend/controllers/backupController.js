@@ -3,107 +3,89 @@ const fs = require('fs').promises;
 const path = require('path');
 
 /**
- * Generates a backup of the database
- * @param {string} period - 'weekly' or 'monthly'
- * @returns {Promise<string>} - Path to the backup file
- */
-async function generateBackupData(period) {
-  const currentDate = new Date();
-  let query;
-
-  if (period === 'weekly') {
-    query = `
-      SELECT b.*, u.username 
-      FROM bookings b
-      JOIN users u ON b.user_id = u.id
-      WHERE b.created_at >= NOW() - INTERVAL '7 days'
-      ORDER BY b.created_at DESC
-    `;
-  } else if (period === 'monthly') {
-    query = `
-      SELECT b.*, u.username 
-      FROM bookings b
-      JOIN users u ON b.user_id = u.id
-      WHERE b.created_at >= NOW() - INTERVAL '30 days'
-      ORDER BY b.created_at DESC
-    `;
-  }
-
-  const result = await db.query(query);
-  return result.rows;
-}
-
-/**
- * Creates a backup file
- */
-async function createBackup(req, res) {
-  const { period } = req.params;
-  
-  if (!['weekly', 'monthly'].includes(period)) {
-    return res.status(400).json({ message: 'Invalid backup period' });
-  }
-
-  try {
-    const backupData = await generateBackupData(period);
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const fileName = `backup-${period}-${timestamp}.json`;
-    const backupDir = path.join(__dirname, '../backups');
-    
-    // Create backups directory if it doesn't exist
-    await fs.mkdir(backupDir, { recursive: true });
-    
-    const backupPath = path.join(backupDir, fileName);
-    await fs.writeFile(
-      backupPath,
-      JSON.stringify(backupData, null, 2)
-    );
-
-    // Generate backup summary
-    const summary = {
-      period,
-      timestamp: new Date().toISOString(),
-      totalRecords: backupData.length,
-      fileName,
-    };
-
-    res.json({
-      message: 'Backup created successfully',
-      summary
-    });
-  } catch (error) {
-    console.error('Error creating backup:', error);
-    res.status(500).json({ message: 'Error creating backup' });
-  }
-}
-
-/**
  * Gets list of available backups
  */
-async function getBackups(req, res) {
+async function getBackups() {
   try {
     const backupDir = path.join(__dirname, '../backups');
+    
+    // Create backup directory if it doesn't exist
+    await fs.mkdir(backupDir, { recursive: true });
+    
+    // Get all files in backup directory
     const files = await fs.readdir(backupDir);
     
+    // Get file details
     const backups = await Promise.all(
-      files.map(async (file) => {
-        const stats = await fs.stat(path.join(backupDir, file));
-        return {
-          fileName: file,
-          createdAt: stats.birthtime,
-          size: stats.size,
-          type: file.includes('weekly') ? 'weekly' : 'monthly'
-        };
-      })
+      files
+        .filter(file => file.endsWith('.gz'))
+        .map(async (file) => {
+          const filePath = path.join(backupDir, file);
+          const stats = await fs.stat(filePath);
+          
+          return {
+            fileName: file,
+            type: file.includes('weekly') ? 'weekly' : 'monthly',
+            createdAt: stats.birthtime,
+            size: stats.size
+          };
+        })
     );
-
-    res.json({ backups });
+    
+    // Sort by creation date, newest first
+    return backups.sort((a, b) => b.createdAt - a.createdAt);
   } catch (error) {
-    console.error('Error fetching backups:', error);
-    res.status(500).json({ message: 'Error fetching backups' });
+    console.error('Error getting backups:', error);
+    throw error;
+  }
+}
+
+/**
+ * Creates a new backup
+ */
+async function createBackup(period) {
+  if (!['weekly', 'monthly'].includes(period)) {
+    throw new Error('Invalid backup period');
+  }
+
+  try {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const backupDir = path.join(__dirname, '../backups');
+    
+    // Create backup directory if it doesn't exist
+    await fs.mkdir(backupDir, { recursive: true });
+    
+    // Get data to backup
+    const bookingsResult = await db.query('SELECT * FROM bookings');
+    const usersResult = await db.query('SELECT * FROM users');
+    
+    const backupData = {
+      timestamp,
+      period,
+      bookings: bookingsResult.rows,
+      users: usersResult.rows
+    };
+    
+    // Create backup file
+    const fileName = `backup_${period}_${timestamp}.json.gz`;
+    const filePath = path.join(backupDir, fileName);
+    
+    await fs.writeFile(filePath, JSON.stringify(backupData, null, 2));
+    
+    return {
+      success: true,
+      message: 'Backup created successfully',
+      fileName,
+      timestamp,
+      type: period
+    };
+  } catch (error) {
+    console.error('Error creating backup:', error);
+    throw error;
   }
 }
 
 module.exports = {
-  createBackup,
-  getBackups
+  getBackups,
+  createBackup
 }; 

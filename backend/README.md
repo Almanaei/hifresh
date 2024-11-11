@@ -181,6 +181,93 @@ pg_dump -U postgres -t users -t bookings -a booking_system > data_backup.sql
 pg_dump -U postgres -s booking_system > schema_backup.sql
 ```
 
+## Automated Backup System
+
+### 1. Setup Daily Backup Script
+1. Create the backup script:
+   ```bash
+   # Copy the backup script to your backend directory
+   cp backup_daily.sh /path/to/backend/
+   
+   # Make it executable
+   chmod +x backup_daily.sh
+   ```
+
+2. Configure backup settings in `backup_daily.sh`:
+   ```bash
+   BACKUP_DIR="./backups"    # Backup directory
+   DB_NAME="booking_system"  # Your database name
+   DB_USER="postgres"        # Your database user
+   RETENTION_DAYS=7         # Number of days to keep backups
+   ```
+
+### 2. Setup Cron Job
+1. Open crontab editor:
+   ```bash
+   crontab -e
+   ```
+
+2. Add this line to run backup daily at 1 AM:
+   ```bash
+   0 1 * * * cd /path/to/your/backend && ./backup_daily.sh >> ./backups/backup.log 2>&1
+   ```
+
+### 3. Backup Status Monitoring
+Check backup status through the API:
+```bash
+# Get backup status
+curl -H "Authorization: Bearer your_token" http://localhost:5000/api/backups/status
+```
+
+Response example:
+```json
+{
+  "status": "OK",
+  "message": "Backup is up to date",
+  "lastBackup": "2024-01-20T01:00:00.000Z",
+  "backupFile": "db_backup_20240120_010000.sql.gz"
+}
+```
+
+### 4. Manual Backup Commands
+Create backups manually:
+```bash
+# Run full backup
+./backup_daily.sh
+
+# Check backup logs
+tail -f ./backups/backup.log
+```
+
+### 5. Backup Types
+The system creates two types of backups:
+1. SQL Database Dump (`db_backup_*.sql.gz`)
+2. JSON Data Export (`json_backup_*.json.gz`)
+
+### 6. Backup Retention
+- Backups are kept for 7 days by default
+- Older backups are automatically deleted
+- Modify `RETENTION_DAYS` in `backup_daily.sh` to change retention period
+
+### 7. Backup Location
+Backups are stored in:
+```
+backend/backups/
+├── db_backup_*.sql.gz     # Database dumps
+├── json_backup_*.json.gz  # JSON exports
+└── backup.log            # Backup logs
+```
+
+### 8. Restore from Backup
+To restore from a backup:
+```bash
+# For SQL backup
+gunzip -c backups/db_backup_*.sql.gz | psql -U postgres booking_system
+
+# For JSON backup
+node utils/backup.js restore backups/json_backup_*.json.gz
+```
+
 ## Development
 
 ### File Structure
