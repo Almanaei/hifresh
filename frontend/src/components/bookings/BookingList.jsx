@@ -2,8 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
 import Pagination from '../common/Pagination';
 import './BookingList.css';
+import { useTheme } from '../../context/ThemeContext';
 
 function BookingList() {
+  const { isDarkMode } = useTheme();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -45,8 +47,26 @@ function BookingList() {
   }, [fetchBookings]); // Add fetchBookings as dependency
 
   const handleEdit = (booking) => {
-    const localDate = new Date(booking.booking_date).toISOString().slice(0, 16);
-    setEditingBooking({ ...booking, booking_date: localDate });
+    const formatDateForInput = (dateString) => {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return '';
+      
+      // Format to YYYY-MM-DDTHH:mm
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
+    setEditingBooking({
+      ...booking,
+      booking_date: formatDateForInput(booking.booking_date),
+      visit_date: formatDateForInput(booking.visit_date)
+    });
   };
 
   const handleUpdate = async (e) => {
@@ -55,13 +75,21 @@ function BookingList() {
       const formData = new FormData();
       formData.append('title', editingBooking.title);
       formData.append('description', editingBooking.description || '');
-      formData.append('booking_date', editingBooking.booking_date);
-      formData.append('visit_date', editingBooking.visit_date || '');
+      
+      if (editingBooking.booking_date) {
+        const bookingDate = new Date(editingBooking.booking_date);
+        formData.append('booking_date', bookingDate.toISOString());
+      }
+      
+      if (editingBooking.visit_date) {
+        const visitDate = new Date(editingBooking.visit_date);
+        formData.append('visit_date', visitDate.toISOString());
+      }
+      
       formData.append('status', editingBooking.status);
       formData.append('mobile', editingBooking.mobile || '');
       formData.append('email', editingBooking.email || '');
       
-      // Append new attachment if exists
       if (editingBooking.newAttachment) {
         formData.append('attachment', editingBooking.newAttachment);
       }
@@ -86,7 +114,9 @@ function BookingList() {
   };
 
   const handleEditChange = (e) => {
-    if (e.target.type === 'file') {
+    const { name, value, type } = e.target;
+    
+    if (type === 'file') {
       const file = e.target.files[0];
       if (file) {
         if (file.size > 5 * 1024 * 1024) {
@@ -95,17 +125,18 @@ function BookingList() {
         }
         setEditingBooking({
           ...editingBooking,
-          newAttachment: file // Store the new file separately
+          newAttachment: file
         });
       }
-    } else {
-      const value = e.target.type === 'datetime-local' && e.target.value
-        ? new Date(e.target.value).toISOString()
-        : e.target.value;
-      
+    } else if (name === 'booking_date' || name === 'visit_date') {
       setEditingBooking({
         ...editingBooking,
-        [e.target.name]: value,
+        [name]: value
+      });
+    } else {
+      setEditingBooking({
+        ...editingBooking,
+        [name]: value
       });
     }
   };
@@ -244,7 +275,7 @@ function BookingList() {
               <input
                 type="datetime-local"
                 name="booking_date"
-                value={editingBooking.booking_date}
+                value={editingBooking.booking_date || ''}
                 onChange={handleEditChange}
                 className="form-control"
               />
@@ -257,6 +288,7 @@ function BookingList() {
                 name="visit_date"
                 value={editingBooking.visit_date || ''}
                 onChange={handleEditChange}
+                min={editingBooking.booking_date}
                 className="form-control"
               />
             </div>
@@ -454,7 +486,7 @@ function BookingList() {
                   <input
                     type="datetime-local"
                     name="booking_date"
-                    value={editingBooking.booking_date}
+                    value={editingBooking.booking_date || ''}
                     onChange={handleEditChange}
                     className="form-control dark-input"
                   />
@@ -467,6 +499,7 @@ function BookingList() {
                     name="visit_date"
                     value={editingBooking.visit_date || ''}
                     onChange={handleEditChange}
+                    min={editingBooking.booking_date}
                     className="form-control dark-input"
                   />
                 </div>
@@ -571,40 +604,13 @@ function BookingList() {
     );
   };
 
-  // Add this state at the beginning of your component
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    const savedMode = localStorage.getItem('darkMode');
-    return savedMode ? JSON.parse(savedMode) : false;
-  });
-
-  // Add this effect to handle system preference changes
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e) => {
-      setIsDarkMode(e.matches);
-      localStorage.setItem('darkMode', JSON.stringify(e.matches));
-    };
-
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
-
-  // Add this function to toggle dark mode
-  const toggleDarkMode = () => {
-    setIsDarkMode(prev => {
-      const newMode = !prev;
-      localStorage.setItem('darkMode', JSON.stringify(newMode));
-      return newMode;
-    });
-  };
+  const filteredBookings = filterBookings(bookings);
 
   if (loading) return <div>Loading bookings...</div>;
   if (error) return <div className="error-message">{error}</div>;
 
-  const filteredBookings = filterBookings(bookings);
-
   return (
-    <div className={`booking-list ${isDarkMode ? 'dark-theme' : 'light-theme'}`}>
+    <div className={`booking-list ${isDarkMode ? 'dark-theme' : ''}`}>
       <h2>Your Bookings</h2>
 
       {/* Filter and Sort Controls */}
@@ -656,14 +662,6 @@ function BookingList() {
               List View
             </button>
           </div>
-
-          <button 
-            className={`theme-toggle ${isDarkMode ? 'dark' : 'light'}`}
-            onClick={toggleDarkMode}
-            aria-label="Toggle dark mode"
-          >
-            {isDarkMode ? '🌙' : '☀️'}
-          </button>
         </div>
       </div>
 
@@ -720,7 +718,7 @@ function BookingList() {
                               <input
                                 type="datetime-local"
                                 name="booking_date"
-                                value={editingBooking.booking_date}
+                                value={editingBooking.booking_date || ''}
                                 onChange={handleEditChange}
                                 required
                               />

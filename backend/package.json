@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "set NODE_NO_WARNINGS=1 && node index.js",
-    "dev": "set NODE_NO_WARNINGS=1 && nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "update-db": "psql -U postgres -d booking_system -f db/schema.sql",
+    "reset-db": "echo \"⚠️ WARNING: This will delete all data! Are you sure? Press Ctrl+C to cancel or wait 5 seconds to continue...\" && timeout 5 && psql -U postgres -d booking_system -f db/reset_db.sql"
   },
   "keywords": [],
   "author": "",
@@ -13,8 +14,8 @@
   "description": "",
   "dependencies": {
     "bcrypt": "^5.1.1",
-    "body-parser": "^1.20.3",
     "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "jsonwebtoken": "^9.0.2",

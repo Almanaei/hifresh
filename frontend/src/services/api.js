@@ -1,62 +1,114 @@
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+const handleResponse = async (response) => {
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Something went wrong');
+  }
+  return response.json();
+};
+
+// Add this for debugging
+const logApiError = (error, endpoint) => {
+  console.error(`API Error (${endpoint}):`, error);
+  console.log('Request URL:', `${API_URL}${endpoint}`);
+};
 
 export const api = {
   // Auth endpoints
   signup: async (userData) => {
-    const response = await fetch(`${API_URL}/users/signup`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(userData),
-    });
-    return handleResponse(response);
+    try {
+      const response = await fetch(`${API_URL}/users/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+        credentials: 'include'
+      });
+      return handleResponse(response);
+    } catch (error) {
+      throw new Error(error.message || 'Failed to sign up');
+    }
   },
 
   login: async (credentials) => {
-    const response = await fetch(`${API_URL}/users/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(credentials),
-    });
-    return handleResponse(response);
+    try {
+      const response = await fetch(`${API_URL}/users/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+        credentials: 'include'
+      });
+      return handleResponse(response);
+    } catch (error) {
+      throw new Error(error.message || 'Failed to log in');
+    }
+  },
+
+  // Helper function to update last_active
+  updateLastActive: async () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        await fetch(`${API_URL}/users/update-activity`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+      } catch (error) {
+        console.error('Error updating last active:', error);
+      }
+    }
   },
 
   // Booking endpoints
   createBooking: async (formData) => {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/bookings`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
-    });
-    return handleResponse(response);
+    try {
+      const response = await fetch(`${API_URL}/bookings`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: formData,
+      });
+      return handleResponse(response);
+    } catch (error) {
+      throw new Error(error.message || 'Failed to create booking');
+    }
   },
 
   getBookings: async (page = 1, limit = 10) => {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/bookings?page=${page}&limit=${limit}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    return handleResponse(response);
+    try {
+      const response = await fetch(`${API_URL}/bookings?page=${page}&limit=${limit}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      return handleResponse(response);
+    } catch (error) {
+      logApiError(error, '/bookings');
+      throw error;
+    }
   },
 
   updateBooking: async (id, formData) => {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/bookings/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
-    });
-    return handleResponse(response);
+    try {
+      const response = await fetch(`${API_URL}/bookings/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: formData,
+      });
+      return handleResponse(response);
+    } catch (error) {
+      throw new Error(error.message || 'Failed to update booking');
+    }
   },
 
   deleteBooking: async (id) => {
@@ -102,27 +154,33 @@ export const api = {
   },
 
   updateUser: async (id, userData) => {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/users/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(userData),
-    });
-    return handleResponse(response);
+    try {
+      const response = await fetch(`${API_URL}/users/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(userData)
+      });
+      return handleResponse(response);
+    } catch (error) {
+      throw new Error(error.message || 'Failed to update user');
+    }
   },
 
   deleteUser: async (id) => {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/users/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    return handleResponse(response);
+    try {
+      const response = await fetch(`${API_URL}/users/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      return handleResponse(response);
+    } catch (error) {
+      throw new Error(error.message || 'Failed to delete user');
+    }
   },
 
   resetUserPassword: async (id) => {
@@ -147,13 +205,24 @@ export const api = {
   },
 
   getAnalytics: async () => {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/analytics`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    return handleResponse(response);
+    try {
+      const response = await fetch(`${API_URL}/analytics`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to fetch analytics');
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw new Error(error.message || 'Failed to fetch analytics');
+    }
   },
 
   generateCertificate: async (bookingId) => {
@@ -187,14 +256,6 @@ export const api = {
     });
     return handleResponse(response);
   },
-};
-
-const handleResponse = async (response) => {
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || 'Something went wrong');
-  }
-  return data;
 };
 
 export default api; 

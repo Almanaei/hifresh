@@ -1,54 +1,55 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import api from '../../services/api';
-import Pagination from '../common/Pagination';
 import './UserList.css';
 
 function UserList() {
+  const { isDarkMode } = useTheme();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
   const [editingUser, setEditingUser] = useState(null);
-  const [resetPasswordResult, setResetPasswordResult] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pagination, setPagination] = useState(null);
 
-  const fetchUsers = useCallback(async () => {
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
     try {
-      const response = await api.getUsers(currentPage);
+      const response = await api.getUsers();
       setUsers(response.users);
-      setPagination(response.pagination);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [currentPage]);
-
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+  };
 
   const handleEdit = (user) => {
-    setEditingUser({ ...user });
+    setEditingUser(user);
   };
 
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      await api.updateUser(editingUser.id, editingUser);
+      await api.updateUser(editingUser.id, {
+        username: editingUser.username,
+        email: editingUser.email,
+        role: editingUser.role,
+        status: editingUser.status
+      });
       setEditingUser(null);
-      fetchUsers();
+      fetchUsers(); // Refresh the list
     } catch (err) {
       setError(err.message);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
+  const handleDelete = async (userId) => {
+    if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       try {
-        await api.deleteUser(id);
-        fetchUsers();
+        await api.deleteUser(userId);
+        fetchUsers(); // Refresh the list
       } catch (err) {
         setError(err.message);
       }
@@ -56,200 +57,179 @@ function UserList() {
   };
 
   const handleEditChange = (e) => {
-    setEditingUser({
-      ...editingUser,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    setEditingUser(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString();
-  };
+  const formatLastActive = (dateString) => {
+    if (!dateString) return 'Never';
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid Date';
 
-  const filteredUsers = users.filter(user =>
-    user.username.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
 
-  const handleResetPassword = async (id) => {
-    if (window.confirm('Are you sure you want to reset this user\'s password?')) {
-      try {
-        const response = await api.resetUserPassword(id);
-        setResetPasswordResult({
-          userId: id,
-          newPassword: response.newPassword
-        });
-      } catch (err) {
-        setError(err.message);
-      }
+    if (diffInSeconds < 60) {
+      return 'Just now';
     }
-  };
-
-  const clearResetPasswordResult = () => {
-    setResetPasswordResult(null);
-  };
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes} ${diffInMinutes === 1 ? 'minute' : 'minutes'} ago`;
+    }
+    if (diffInHours < 24) {
+      return `${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'} ago`;
+    }
+    if (diffInDays < 7) {
+      return `${diffInDays} ${diffInDays === 1 ? 'day' : 'days'} ago`;
+    }
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   if (loading) return <div className="loading-state">Loading users...</div>;
   if (error) return <div className="error-message">{error}</div>;
 
   return (
-    <div className="user-list">
+    <div className={`users-page ${isDarkMode ? 'dark-theme' : ''}`}>
       <h2>User Management</h2>
-
-      <div className="user-controls">
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="Search users..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-        </div>
+      
+      {error && <div className="error-message">{error}</div>}
+      
+      <div className="users-list">
+        <table className="users-table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Last Active</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map(user => (
+              <tr key={user.id}>
+                {editingUser && editingUser.id === user.id ? (
+                  // Edit mode
+                  <>
+                    <td>
+                      <input
+                        type="text"
+                        name="username"
+                        value={editingUser.username}
+                        onChange={handleEditChange}
+                        className="edit-input"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="email"
+                        name="email"
+                        value={editingUser.email}
+                        onChange={handleEditChange}
+                        className="edit-input"
+                      />
+                    </td>
+                    <td>
+                      <select
+                        name="role"
+                        value={editingUser.role}
+                        onChange={handleEditChange}
+                        className="edit-select"
+                      >
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </td>
+                    <td>
+                      <select
+                        name="status"
+                        value={editingUser.status}
+                        onChange={handleEditChange}
+                        className="edit-select"
+                      >
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="suspended">Suspended</option>
+                      </select>
+                    </td>
+                    <td>{formatLastActive(user.last_active)}</td>
+                    <td>
+                      <div className="action-buttons">
+                        <button 
+                          onClick={handleUpdate}
+                          className="save-button"
+                        >
+                          <span className="button-icon">💾</span>
+                          Save
+                        </button>
+                        <button 
+                          onClick={() => setEditingUser(null)}
+                          className="cancel-button"
+                        >
+                          <span className="button-icon">❌</span>
+                          Cancel
+                        </button>
+                      </div>
+                    </td>
+                  </>
+                ) : (
+                  // View mode
+                  <>
+                    <td>{user.username}</td>
+                    <td>{user.email}</td>
+                    <td>
+                      <span className={`role-badge ${user.role}`}>
+                        {user.role}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`status-badge ${user.status}`}>
+                        {user.status}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="last-active">
+                        {formatLastActive(user.last_active)}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="action-buttons">
+                        <button 
+                          onClick={() => handleEdit(user)}
+                          className="edit-button"
+                        >
+                          <span className="button-icon">✏️</span>
+                          Edit
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(user.id)}
+                          className="delete-button"
+                        >
+                          <span className="button-icon">🗑️</span>
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-
-      {filteredUsers.length === 0 ? (
-        <p className="no-users">No users found.</p>
-      ) : (
-        <>
-          {pagination && (
-            <div className="pagination-info">
-              Showing {users.length} of {pagination.totalItems} users
-            </div>
-          )}
-          <div className="table-container">
-            <table className="user-table">
-              <thead>
-                <tr>
-                  <th>Username</th>
-                  <th>Email</th>
-                  <th>Created At</th>
-                  <th>Last Updated</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map((user) => (
-                  <tr key={user.id}>
-                    {editingUser && editingUser.id === user.id ? (
-                      <td colSpan="5">
-                        <form onSubmit={handleUpdate} className="edit-form">
-                          <div className="form-group">
-                            <input
-                              type="text"
-                              name="username"
-                              value={editingUser.username}
-                              onChange={handleEditChange}
-                              required
-                              className="form-control"
-                            />
-                          </div>
-                          <div className="form-group">
-                            <input
-                              type="email"
-                              name="email"
-                              value={editingUser.email || ''}
-                              onChange={handleEditChange}
-                              className="form-control"
-                            />
-                          </div>
-                          <div className="button-group">
-                            <button type="submit" className="edit-button">Save</button>
-                            <button 
-                              type="button" 
-                              onClick={() => setEditingUser(null)}
-                              className="cancel-button"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </form>
-                      </td>
-                    ) : (
-                      <>
-                        <td>{user.username}</td>
-                        <td>{user.email || 'N/A'}</td>
-                        <td>{formatDate(user.created_at)}</td>
-                        <td>{formatDate(user.updated_at)}</td>
-                        <td>
-                          <div className="action-buttons">
-                            <button 
-                              onClick={() => handleEdit(user)}
-                              className="edit-button"
-                            >
-                              Edit
-                            </button>
-                            <button 
-                              onClick={() => handleResetPassword(user.id)}
-                              className="reset-button"
-                            >
-                              Reset Password
-                            </button>
-                            <button 
-                              onClick={() => handleDelete(user.id)}
-                              className="delete-button"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </td>
-                      </>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {pagination && pagination.totalPages > 1 && (
-            <Pagination
-              currentPage={pagination.currentPage}
-              totalPages={pagination.totalPages}
-              onPageChange={handlePageChange}
-            />
-          )}
-        </>
-      )}
-
-      {resetPasswordResult && (
-        <div className="modal-overlay" onClick={clearResetPasswordResult}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Password Reset Successful</h2>
-              <button className="close-button" onClick={clearResetPasswordResult}>&times;</button>
-            </div>
-            <div className="modal-body">
-              <p>The new password for the user is:</p>
-              <div className="password-display">
-                <code>{resetPasswordResult.newPassword}</code>
-              </div>
-              <p className="warning-text">
-                Please make sure to copy this password and send it to the user securely.
-                This password will not be shown again.
-              </p>
-            </div>
-            <div className="button-group">
-              <button 
-                onClick={() => {
-                  navigator.clipboard.writeText(resetPasswordResult.newPassword);
-                  alert('Password copied to clipboard!');
-                }}
-                className="copy-button"
-              >
-                Copy Password
-              </button>
-              <button 
-                onClick={clearResetPasswordResult}
-                className="close-button"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

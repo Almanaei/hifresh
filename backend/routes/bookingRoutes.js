@@ -41,13 +41,13 @@ router.post('/', verifyToken, upload, validateBooking, createBooking);
 // Get all bookings for the authenticated user
 router.get('/', verifyToken, getUserBookings);
 
-// Update a booking - Fix the middleware order here
+// Update a booking
 router.put('/:id', verifyToken, upload, validateBooking, updateBooking);
 
 // Delete a booking
 router.delete('/:id', verifyToken, deleteBooking);
 
-// Add this route to get all bookings without pagination
+// Get all bookings (for admin/analytics)
 router.get('/all', verifyToken, async (req, res) => {
   try {
     const result = await db.query(

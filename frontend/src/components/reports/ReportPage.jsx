@@ -1,184 +1,167 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import api from '../../services/api';
 import './ReportPage.css';
 
 function ReportPage() {
-  const [loading, setLoading] = useState(false);
+  const { isDarkMode } = useTheme();
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [report, setReport] = useState(null);
-  const [selectedPeriod, setSelectedPeriod] = useState('daily');
+  const [period, setPeriod] = useState('daily');
 
-  const handleGenerateReport = async (period) => {
+  const fetchReports = useCallback(async () => {
     setLoading(true);
-    setError('');
     try {
       const response = await api.generateReport(period);
-      setReport(response);
-      setSelectedPeriod(period);
+      setReports(response);
+      setError('');
     } catch (err) {
       setError(err.message);
+      console.error('Error fetching reports:', err);
     } finally {
       setLoading(false);
+    }
+  }, [period]);
+
+  useEffect(() => {
+    fetchReports();
+  }, [fetchReports]);
+
+  const handleExport = async (format) => {
+    try {
+      const response = await api.exportReport(period, format);
+      const url = window.URL.createObjectURL(new Blob([response]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `report-${period}-${new Date().toISOString()}.${format}`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      setError(err.message);
     }
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString();
-  };
-
-  const handleExport = (format) => {
-    if (!report) return;
-
-    const exportData = {
-      reportType: `${selectedPeriod} Report`,
-      generatedAt: report.generated_at,
-      statistics: report.statistics,
-      bookings: report.bookings
-    };
-
-    let content;
-    let filename;
-    let type;
-
-    if (format === 'json') {
-      content = JSON.stringify(exportData, null, 2);
-      filename = `report-${selectedPeriod}-${new Date().toISOString()}.json`;
-      type = 'application/json';
-    } else if (format === 'csv') {
-      // Create CSV content
-      const headers = ['Title', 'Date', 'Status', 'Created At'];
-      const rows = report.bookings.map(booking => [
-        booking.title,
-        formatDate(booking.booking_date),
-        booking.status,
-        formatDate(booking.created_at)
-      ]);
-      
-      content = [
-        `${selectedPeriod.toUpperCase()} REPORT`,
-        `Generated at: ${formatDate(report.generated_at)}`,
-        '',
-        'STATISTICS',
-        `Total Bookings: ${report.statistics.total_bookings}`,
-        `Pending Bookings: ${report.statistics.pending_bookings}`,
-        `Confirmed Bookings: ${report.statistics.confirmed_bookings}`,
-        `Cancelled Bookings: ${report.statistics.cancelled_bookings}`,
-        '',
-        'BOOKINGS',
-        headers.join(','),
-        ...rows.map(row => row.join(','))
-      ].join('\n');
-      
-      filename = `report-${selectedPeriod}-${new Date().toISOString()}.csv`;
-      type = 'text/csv';
-    }
-
-    // Create and trigger download
-    const blob = new Blob([content], { type });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    return new Date(dateString).toLocaleDateString();
   };
 
   return (
-    <div className="report-page">
-      <h2>Booking Reports</h2>
+    <div className={`report-page ${isDarkMode ? 'dark-theme' : ''}`}>
+      <h2>Reports & Analytics</h2>
+
+      {error && (
+        <div className="error-message">
+          <span className="error-icon">⚠️</span>
+          {error}
+        </div>
+      )}
 
       <div className="report-actions">
         <button 
-          onClick={() => handleGenerateReport('daily')}
-          className={`report-button ${selectedPeriod === 'daily' ? 'active' : ''}`}
-          disabled={loading}
+          className={`report-button ${period === 'daily' ? 'active' : ''}`}
+          onClick={() => setPeriod('daily')}
         >
           Daily Report
         </button>
         <button 
-          onClick={() => handleGenerateReport('weekly')}
-          className={`report-button ${selectedPeriod === 'weekly' ? 'active' : ''}`}
-          disabled={loading}
+          className={`report-button ${period === 'weekly' ? 'active' : ''}`}
+          onClick={() => setPeriod('weekly')}
         >
           Weekly Report
         </button>
         <button 
-          onClick={() => handleGenerateReport('monthly')}
-          className={`report-button ${selectedPeriod === 'monthly' ? 'active' : ''}`}
-          disabled={loading}
+          className={`report-button ${period === 'monthly' ? 'active' : ''}`}
+          onClick={() => setPeriod('monthly')}
         >
           Monthly Report
         </button>
       </div>
 
-      {error && <p className="error-message">{error}</p>}
-      {loading && <p>Generating report...</p>}
-
-      {report && (
-        <div className="report-content">
-          <div className="report-header">
-            <h3>{selectedPeriod.charAt(0).toUpperCase() + selectedPeriod.slice(1)} Report</h3>
-            <p>Generated at: {formatDate(report.generated_at)}</p>
-            <div className="export-buttons">
-              <button onClick={() => handleExport('csv')} className="export-button">
-                Export as CSV
-              </button>
-              <button onClick={() => handleExport('json')} className="export-button">
-                Export as JSON
-              </button>
-            </div>
-          </div>
-
-          <div className="statistics-grid">
-            <div className="stat-card">
-              <h4>Total Bookings</h4>
-              <p>{report.statistics.total_bookings}</p>
-            </div>
-            <div className="stat-card">
-              <h4>Pending</h4>
-              <p>{report.statistics.pending_bookings}</p>
-            </div>
-            <div className="stat-card">
-              <h4>Confirmed</h4>
-              <p>{report.statistics.confirmed_bookings}</p>
-            </div>
-            <div className="stat-card">
-              <h4>Cancelled</h4>
-              <p>{report.statistics.cancelled_bookings}</p>
-            </div>
-          </div>
-
-          <div className="report-details">
-            <h4>Booking Details</h4>
-            <table className="report-table">
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Date</th>
-                  <th>Status</th>
-                  <th>Created</th>
-                </tr>
-              </thead>
-              <tbody>
-                {report.bookings.map((booking) => (
-                  <tr key={booking.id}>
-                    <td>{booking.title}</td>
-                    <td>{formatDate(booking.booking_date)}</td>
-                    <td>
-                      <span className={`status status-${booking.status}`}>
-                        {booking.status}
-                      </span>
-                    </td>
-                    <td>{formatDate(booking.created_at)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      <div className="report-content">
+        <div className="report-header">
+          <h3>{period.charAt(0).toUpperCase() + period.slice(1)} Report</h3>
+          <div className="export-buttons">
+            <button 
+              onClick={() => handleExport('pdf')}
+              className="export-button pdf"
+            >
+              <span className="button-icon">📄</span>
+              Export PDF
+            </button>
+            <button 
+              onClick={() => handleExport('csv')}
+              className="export-button csv"
+            >
+              <span className="button-icon">📊</span>
+              Export CSV
+            </button>
           </div>
         </div>
-      )}
+
+        {loading ? (
+          <div className="loading-state">
+            <div className="loading-spinner"></div>
+            <p>Generating report...</p>
+          </div>
+        ) : (
+          <>
+            <div className="statistics-grid">
+              <div className="stat-card">
+                <h4>Total Bookings</h4>
+                <p>{reports.totalBookings || 0}</p>
+              </div>
+              <div className="stat-card">
+                <h4>Confirmed</h4>
+                <p>{reports.confirmedBookings || 0}</p>
+              </div>
+              <div className="stat-card">
+                <h4>Cancelled</h4>
+                <p>{reports.cancelledBookings || 0}</p>
+              </div>
+              <div className="stat-card">
+                <h4>Revenue</h4>
+                <p>${reports.totalRevenue || 0}</p>
+              </div>
+            </div>
+
+            <div className="report-details">
+              <h4>Booking Details</h4>
+              <table className="report-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Bookings</th>
+                    <th>Confirmed</th>
+                    <th>Cancelled</th>
+                    <th>Revenue</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reports.details?.map((detail, index) => (
+                    <tr key={index}>
+                      <td>{formatDate(detail.date)}</td>
+                      <td>{detail.bookings}</td>
+                      <td>
+                        <span className="status confirmed">
+                          {detail.confirmed}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="status cancelled">
+                          {detail.cancelled}
+                        </span>
+                      </td>
+                      <td>${detail.revenue}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

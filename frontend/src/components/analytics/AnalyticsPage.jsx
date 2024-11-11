@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import api from '../../services/api';
 import { Line, Bar } from 'react-chartjs-2';
 import {
@@ -27,6 +28,7 @@ ChartJS.register(
 );
 
 function AnalyticsPage() {
+  const { isDarkMode } = useTheme();
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -50,7 +52,8 @@ function AnalyticsPage() {
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
-      month: 'short'
+      month: 'short',
+      day: 'numeric'
     });
   };
 
@@ -58,11 +61,21 @@ function AnalyticsPage() {
     const date = new Date(dateString);
     switch (view) {
       case 'daily':
-        return date.toLocaleDateString();
+        return date.toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric'
+        });
       case 'weekly':
-        return `Week of ${date.toLocaleDateString()}`;
+        return `Week of ${date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric'
+        })}`;
       case 'monthly':
-        return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        return date.toLocaleDateString('en-US', {
+          month: 'long',
+          year: 'numeric'
+        });
       default:
         return dateString;
     }
@@ -84,44 +97,100 @@ function AnalyticsPage() {
           yAxisID: 'y1',
         },
         {
-          label: 'Success Rate (%)',
-          data: rates.map(rate => rate.success_rate),
+          label: 'Confirmation Rate (%)',
+          data: rates.map(rate => rate.confirmation_rate),
           backgroundColor: 'rgba(40, 167, 69, 0.6)',
           yAxisID: 'y2',
         },
         {
-          label: 'Cancellation Rate (%)',
-          data: rates.map(rate => rate.cancellation_rate),
-          backgroundColor: 'rgba(220, 53, 69, 0.6)',
+          label: 'Attachment Usage (%)',
+          data: rates.map(rate => rate.attachment_rate),
+          backgroundColor: 'rgba(255, 193, 7, 0.6)',
           yAxisID: 'y2',
         }
       ]
     };
   };
 
-  const rateChartOptions = {
+  // Move chartOptions definition here, before it's used
+  const chartOptions = {
     responsive: true,
-    interaction: {
-      mode: 'index',
-      intersect: false,
-    },
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'top',
+        align: 'start',
+        labels: {
+          boxWidth: 20,
+          padding: 20,
+          color: isDarkMode ? '#e5e7eb' : '#1f2937'
+        }
       },
       title: {
         display: true,
-        text: `${rateView.charAt(0).toUpperCase() + rateView.slice(1)} Booking Rates`
+        text: 'Monthly Booking Trends',
+        padding: {
+          top: 10,
+          bottom: 20
+        },
+        color: isDarkMode ? '#e5e7eb' : '#1f2937'
+      },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+        backgroundColor: isDarkMode ? '#2d2d2d' : 'rgba(255, 255, 255, 0.9)',
+        titleColor: isDarkMode ? '#e5e7eb' : '#1f2937',
+        bodyColor: isDarkMode ? '#e5e7eb' : '#1f2937',
+        borderColor: isDarkMode ? '#404040' : '#e5e7eb',
+        borderWidth: 1
       }
     },
     scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+          min: 0,
+          color: isDarkMode ? '#e5e7eb' : '#1f2937'
+        },
+        grid: {
+          color: isDarkMode ? '#404040' : '#e5e7eb'
+        }
+      },
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          color: isDarkMode ? '#e5e7eb' : '#1f2937'
+        }
+      }
+    },
+    interaction: {
+      mode: 'nearest',
+      axis: 'x',
+      intersect: false
+    }
+  };
+
+  const rateChartOptions = {
+    ...chartOptions,
+    scales: {
+      ...chartOptions.scales,
       y1: {
         type: 'linear',
         display: true,
         position: 'left',
         title: {
           display: true,
-          text: 'Number of Bookings'
+          text: 'Number of Bookings',
+          color: isDarkMode ? '#e5e7eb' : '#1f2937'
+        },
+        ticks: {
+          color: isDarkMode ? '#e5e7eb' : '#1f2937'
+        },
+        grid: {
+          color: isDarkMode ? '#404040' : '#e5e7eb'
         }
       },
       y2: {
@@ -130,10 +199,14 @@ function AnalyticsPage() {
         position: 'right',
         title: {
           display: true,
-          text: 'Rate (%)'
+          text: 'Rate (%)',
+          color: isDarkMode ? '#e5e7eb' : '#1f2937'
         },
         grid: {
           drawOnChartArea: false
+        },
+        ticks: {
+          color: isDarkMode ? '#e5e7eb' : '#1f2937'
         },
         min: 0,
         max: 100
@@ -171,56 +244,16 @@ function AnalyticsPage() {
     ]
   };
 
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-        align: 'start',
-        labels: {
-          boxWidth: 20,
-          padding: 20
-        }
-      },
-      title: {
-        display: true,
-        text: 'Monthly Booking Trends',
-        padding: {
-          top: 10,
-          bottom: 20
-        }
-      },
-      tooltip: {
-        mode: 'index',
-        intersect: false,
-      }
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          stepSize: 1,
-          min: 0
-        }
-      },
-      x: {
-        grid: {
-          display: false
-        }
-      }
-    },
-    interaction: {
-      mode: 'nearest',
-      axis: 'x',
-      intersect: false
-    }
-  };
-
   const getTimeLabel = (hour) => {
-    const formattedHour = hour.toString().padStart(2, '0');
-    const nextHour = ((hour + 1) % 24).toString().padStart(2, '0');
-    return `${formattedHour}:00 - ${nextHour}:00`;
+    const formattedHour = new Date(2000, 0, 1, hour).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      hour12: true
+    });
+    const nextHour = new Date(2000, 0, 1, hour + 1).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      hour12: true
+    });
+    return `${formattedHour} - ${nextHour}`;
   };
 
   const getBarColor = (count, maxCount) => {
@@ -230,69 +263,72 @@ function AnalyticsPage() {
     return 'linear-gradient(180deg, #90CAF9 0%, #64B5F6 100%)';
   };
 
-  if (loading) return <div className="loading-state">Loading analytics...</div>;
-  if (error) return <div className="error-message">{error}</div>;
-  if (!analytics) return null;
+  // Update the summary cards to show real metrics
+  const getSummaryData = () => {
+    if (!analytics) return {};
+
+    const totalBookings = analytics.totalBookings || 0;
+    const confirmedBookings = analytics.confirmedBookings || 0;
+    const pendingBookings = analytics.pendingBookings || 0;
+    const cancelledBookings = analytics.cancelledBookings || 0;
+
+    return {
+      totalBookings,
+      confirmedBookings,
+      pendingBookings,
+      cancelledBookings,
+      confirmationRate: totalBookings ? 
+        Math.round((confirmedBookings / totalBookings) * 100) : 0,
+      attachmentRate: totalBookings ? 
+        Math.round((analytics.bookingsWithAttachments / totalBookings) * 100) : 0
+    };
+  };
+
+  if (loading) return (
+    <div className={`analytics-page ${isDarkMode ? 'dark-theme' : ''}`}>
+      <div className="loading-state">
+        <div className="loading-spinner"></div>
+        <p>Loading analytics...</p>
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <div className={`analytics-page ${isDarkMode ? 'dark-theme' : ''}`}>
+      <div className="error-message">{error}</div>
+    </div>
+  );
 
   return (
-    <div className="analytics-page">
+    <div className={`analytics-page ${isDarkMode ? 'dark-theme' : ''}`}>
       <h2>Analytics Dashboard</h2>
 
       {/* Summary Cards */}
       <div className="analytics-summary">
         <div className="summary-card">
           <h3>Total Bookings</h3>
-          <p className="summary-value">{analytics.attachmentStats.total_bookings}</p>
+          <p className="summary-value">{getSummaryData().totalBookings}</p>
         </div>
         <div className="summary-card">
-          <h3>Active Users</h3>
-          <p className="summary-value">{analytics.userActivity.length}</p>
+          <h3>Confirmed Bookings</h3>
+          <p className="summary-value">{getSummaryData().confirmedBookings}</p>
+        </div>
+        <div className="summary-card">
+          <h3>Confirmation Rate</h3>
+          <p className="summary-value">{getSummaryData().confirmationRate}%</p>
         </div>
         <div className="summary-card">
           <h3>Attachments Used</h3>
-          <p className="summary-value">
-            {Math.round((analytics.attachmentStats.bookings_with_attachments / 
-                       analytics.attachmentStats.total_bookings) * 100)}%
-          </p>
+          <p className="summary-value">{getSummaryData().attachmentRate}%</p>
         </div>
       </div>
 
       {/* Booking Trends Chart */}
       <div className="analytics-card">
-        <h3>Monthly Booking Trends</h3>
+        <h3>Booking Status Distribution</h3>
         <div className="chart-container">
-          <Line 
-            data={chartData} 
-            options={chartOptions}
-          />
+          <Line data={chartData} options={chartOptions} />
         </div>
-      </div>
-
-      {/* User Activity Table */}
-      <div className="analytics-card">
-        <h3>Top Active Users</h3>
-        <table className="analytics-table">
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Total Bookings</th>
-              <th>Confirmed</th>
-              <th>Cancelled</th>
-              <th>Last Activity</th>
-            </tr>
-          </thead>
-          <tbody>
-            {analytics.userActivity.map(user => (
-              <tr key={user.username}>
-                <td>{user.username}</td>
-                <td>{user.total_bookings}</td>
-                <td>{user.confirmed_bookings}</td>
-                <td>{user.cancelled_bookings}</td>
-                <td>{new Date(user.last_activity).toLocaleDateString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
 
       {/* Booking Rates Section */}
@@ -318,18 +354,15 @@ function AnalyticsPage() {
           </button>
         </div>
         <div className="chart-container">
-          <Bar 
-            data={getRateChartData()} 
-            options={rateChartOptions}
-          />
+          <Bar data={getRateChartData()} options={rateChartOptions} />
         </div>
       </div>
 
-      {/* Popular Hours Chart Section */}
+      {/* Popular Hours Chart */}
       <div className="analytics-card">
         <h3>Popular Booking Hours</h3>
         <div className="hours-chart-container">
-          {/* Y-axis labels showing percentage scale */}
+          {/* Y-axis labels */}
           <div className="chart-y-axis">
             <span>100%</span>
             <span>75%</span>
@@ -340,43 +373,41 @@ function AnalyticsPage() {
 
           {/* Main chart area */}
           <div className="hours-chart">
-            {/* Mapping through each hour's data */}
-            {analytics.popularTimes.map(time => {
-              // Calculate the maximum number of bookings for any hour
+            {/* Reference lines */}
+            <div className="comparison-line peak" title="100% (Peak Traffic)"></div>
+            <div className="comparison-line high" title="75% of Peak Traffic"></div>
+            <div className="comparison-line medium" title="50% of Peak Traffic"></div>
+            <div className="comparison-line low" title="25% of Peak Traffic"></div>
+
+            {/* Hour bars */}
+            {analytics?.popularTimes?.map(time => {
               const maxCount = Math.max(...analytics.popularTimes.map(t => t.booking_count));
-              // Calculate this hour's percentage relative to the maximum
               const percentage = (time.booking_count / maxCount) * 100;
 
               return (
                 <div key={time.hour} className="hour-bar-wrapper">
-                  {/* Number of bookings displayed above the bar */}
                   <div className="hour-count">
                     {time.booking_count}
                   </div>
-
-                  {/* The actual bar representing booking volume */}
                   <div 
                     className="hour-bar"
                     style={{ 
-                      height: `${percentage}%`, // Height based on percentage
-                      background: getBarColor(time.booking_count, maxCount) // Color based on traffic level
+                      height: `${percentage}%`,
+                      background: getBarColor(time.booking_count, maxCount)
                     }}
                   >
-                    {/* Tooltip that appears on hover */}
                     <div className="hour-tooltip">
                       <div className="tooltip-header">
-                        {getTimeLabel(time.hour)} {/* Shows time range (e.g., "09:00 - 10:00") */}
+                        {getTimeLabel(time.hour)}
                       </div>
                       <div className="tooltip-content">
                         <strong>{time.booking_count}</strong> bookings
                         <div className="tooltip-percentage">
-                          {percentage.toFixed(1)}% of peak {/* Shows percentage of peak traffic */}
+                          {percentage.toFixed(1)}% of peak
                         </div>
                       </div>
                     </div>
                   </div>
-
-                  {/* Time label below the bar */}
                   <div className="hour-label">
                     <span className="hour-time">{getTimeLabel(time.hour)}</span>
                     <span className="hour-percentage">{percentage.toFixed(0)}%</span>
@@ -384,15 +415,9 @@ function AnalyticsPage() {
                 </div>
               );
             })}
-
-            {/* Reference lines for easy comparison */}
-            <div className="comparison-line peak" title="100% (Peak Traffic)"></div>
-            <div className="comparison-line high" title="75% of Peak Traffic"></div>
-            <div className="comparison-line medium" title="50% of Peak Traffic"></div>
-            <div className="comparison-line low" title="25% of Peak Traffic"></div>
           </div>
 
-          {/* Legend explaining the color coding */}
+          {/* Legend */}
           <div className="hours-legend">
             <div className="legend-item">
               <span className="legend-color" style={{ 
@@ -421,6 +446,29 @@ function AnalyticsPage() {
                 <span className="legend-subtitle">0-49% utilization</span>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Additional Statistics */}
+      <div className="analytics-card">
+        <h3>Booking Statistics</h3>
+        <div className="statistics-grid">
+          <div className="stat-card">
+            <h4>Pending Bookings</h4>
+            <p>{getSummaryData().pendingBookings}</p>
+          </div>
+          <div className="stat-card">
+            <h4>Cancelled Bookings</h4>
+            <p>{getSummaryData().cancelledBookings}</p>
+          </div>
+          <div className="stat-card">
+            <h4>Average Bookings/Day</h4>
+            <p>{analytics?.averageBookingsPerDay?.toFixed(1) || 0}</p>
+          </div>
+          <div className="stat-card">
+            <h4>Most Active Day</h4>
+            <p>{analytics?.mostActiveDay ? formatDate(analytics.mostActiveDay) : 'N/A'}</p>
           </div>
         </div>
       </div>

@@ -38,7 +38,7 @@ async function createUser(req, res) {
 
 
 
-  const { username, email, password } = req.body;
+  const { username, email, password, role = 'user', status = 'active' } = req.body;
 
 
 
@@ -126,7 +126,7 @@ async function createUser(req, res) {
 
 
 
-    // Insert new user
+    // Insert new user with role and status
 
 
 
@@ -134,11 +134,13 @@ async function createUser(req, res) {
 
 
 
-      'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email',
+      `INSERT INTO users (username, email, password, role, status) 
+       VALUES ($1, $2, $3, $4, $5) 
+       RETURNING id, username, email, role, status`,
 
 
 
-      [username, email, hashedPassword]
+      [username, email, hashedPassword, role, status]
 
 
 
@@ -186,23 +188,7 @@ async function createUser(req, res) {
 
 
 
-      user: {
-
-
-
-        id: result.rows[0].id,
-
-
-
-        username: result.rows[0].username,
-
-
-
-        email: result.rows[0].email
-
-
-
-      },
+      user: result.rows[0],
 
 
 
@@ -350,7 +336,31 @@ async function loginUser(req, res) {
 
 
 
-    // Generate JWT token
+    // Update last_active timestamp
+
+
+
+    await db.query(
+
+
+
+      'UPDATE users SET last_active = CURRENT_TIMESTAMP WHERE id = $1',
+
+
+
+      [user.id]
+
+
+
+    );
+
+
+
+
+
+
+
+    // Generate JWT token with proper secret
 
 
 
@@ -358,7 +368,19 @@ async function loginUser(req, res) {
 
 
 
-      { userId: user.id },
+      { 
+
+
+
+        userId: user.id,
+
+
+
+        username: user.username
+
+
+
+      },
 
 
 
@@ -366,7 +388,19 @@ async function loginUser(req, res) {
 
 
 
-      { expiresIn: '24h' }
+      { 
+
+
+
+        expiresIn: '24h',
+
+
+
+        algorithm: 'HS256'
+
+
+
+      }
 
 
 
@@ -394,7 +428,11 @@ async function loginUser(req, res) {
 
 
 
-        username: user.username
+        username: user.username,
+
+
+
+        email: user.email
 
 
 
@@ -414,7 +452,7 @@ async function loginUser(req, res) {
 
 
 
-    console.error('Error during login:', error);
+    console.error('Login Error:', error);
 
 
 
@@ -458,39 +496,59 @@ async function getUsers(req, res) {
 
 
 
-  const page = parseInt(req.query.page) || 1;
-
-
-
-  const limit = parseInt(req.query.limit) || 10;
-
-
-
-  const offset = (page - 1) * limit;
-
-
-
-
-
-
-
   try {
 
 
 
-    // Get total count
+    // First verify the columns exist
 
 
 
-    const countResult = await db.query('SELECT COUNT(*) FROM users');
+    const checkColumns = await db.query(`
 
 
 
-    const totalItems = parseInt(countResult.rows[0].count);
+      SELECT EXISTS (
 
 
 
-    const totalPages = Math.ceil(totalItems / limit);
+        SELECT 1 
+
+
+
+        FROM information_schema.columns 
+
+
+
+        WHERE table_name='users' AND column_name='role'
+
+
+
+      ) as has_role,
+
+
+
+      EXISTS (
+
+
+
+        SELECT 1 
+
+
+
+        FROM information_schema.columns 
+
+
+
+        WHERE table_name='users' AND column_name='status'
+
+
+
+      ) as has_status
+
+
+
+    `);
 
 
 
@@ -498,7 +556,23 @@ async function getUsers(req, res) {
 
 
 
-    // Get paginated results
+    // Build the query dynamically based on available columns
+
+
+
+    const columns = ['id', 'username', 'email', 'last_active', 'created_at', 'updated_at'];
+
+
+
+    if (checkColumns.rows[0].has_role) columns.push('role');
+
+
+
+    if (checkColumns.rows[0].has_status) columns.push('status');
+
+
+
+
 
 
 
@@ -506,14 +580,15 @@ async function getUsers(req, res) {
 
 
 
-      `SELECT id, username, email, created_at, updated_at 
+      `SELECT ${columns.join(', ')} 
+
+
+
        FROM users 
-       ORDER BY created_at DESC
-       LIMIT $1 OFFSET $2`,
 
 
 
-      [limit, offset]
+       ORDER BY created_at DESC`
 
 
 
@@ -525,43 +600,51 @@ async function getUsers(req, res) {
 
 
 
+    // Add default values for missing columns
+
+
+
+    const users = result.rows.map(user => ({
+
+
+
+      ...user,
+
+
+
+      role: user.role || 'user',
+
+
+
+      status: user.status || 'active'
+
+
+
+    }));
+
+
+
+
+
+
+
     res.json({
 
 
 
-      users: result.rows,
+      users,
 
 
 
-      pagination: {
-
-
-
-        currentPage: page,
-
-
-
-        totalPages,
-
-
-
-        totalItems,
-
-
-
-        hasNext: page < totalPages,
-
-
-
-        hasPrevious: page > 1
-
-
-
-      }
+      message: 'Users retrieved successfully'
 
 
 
     });
+
+
+
+
 
 
 
@@ -617,7 +700,7 @@ async function updateUser(req, res) {
 
 
 
-  const { username, email } = req.body;
+  const { username, email, role, status } = req.body;
 
 
 
@@ -629,7 +712,51 @@ async function updateUser(req, res) {
 
 
 
-    const userExists = await db.query(
+    // First check if the user exists
+
+
+
+    const userCheck = await db.query(
+
+
+
+      'SELECT * FROM users WHERE id = $1',
+
+
+
+      [id]
+
+
+
+    );
+
+
+
+
+
+
+
+    if (userCheck.rows.length === 0) {
+
+
+
+      return res.status(404).json({ message: 'User not found' });
+
+
+
+    }
+
+
+
+
+
+
+
+    // Check if username is already taken by another user
+
+
+
+    const usernameCheck = await db.query(
 
 
 
@@ -649,7 +776,7 @@ async function updateUser(req, res) {
 
 
 
-    if (userExists.rows.length > 0) {
+    if (usernameCheck.rows.length > 0) {
 
 
 
@@ -665,38 +792,103 @@ async function updateUser(req, res) {
 
 
 
+    // Validate role
+
+
+
+    const validRoles = ['user', 'admin'];
+
+
+
+    if (!validRoles.includes(role)) {
+
+
+
+      return res.status(400).json({ message: 'Invalid role' });
+
+
+
+    }
+
+
+
+
+
+
+
+    // Validate status
+
+
+
+    const validStatuses = ['active', 'inactive', 'suspended'];
+
+
+
+    if (!validStatuses.includes(status)) {
+
+
+
+      return res.status(400).json({ message: 'Invalid status' });
+
+
+
+    }
+
+
+
+
+
+
+
+    // Perform the update
+
+
+
     const result = await db.query(
 
 
 
       `UPDATE users 
-       SET username = $1, email = $2, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $3
-       RETURNING id, username, email, created_at, updated_at`,
 
 
 
-      [username, email, id]
+       SET 
+
+
+
+         username = COALESCE($1, username),
+
+
+
+         email = COALESCE($2, email),
+
+
+
+         role = COALESCE($3, role),
+
+
+
+         status = COALESCE($4, status),
+
+
+
+         updated_at = CURRENT_TIMESTAMP
+
+
+
+       WHERE id = $5
+
+
+
+       RETURNING id, username, email, role, status, created_at, updated_at`,
+
+
+
+      [username, email, role, status, id]
 
 
 
     );
-
-
-
-
-
-
-
-    if (result.rows.length === 0) {
-
-
-
-      return res.status(404).json({ message: 'User not found' });
-
-
-
-    }
 
 
 
@@ -720,6 +912,10 @@ async function updateUser(req, res) {
 
 
 
+
+
+
+
   } catch (error) {
 
 
@@ -728,7 +924,23 @@ async function updateUser(req, res) {
 
 
 
-    res.status(500).json({ message: 'Error updating user' });
+    res.status(500).json({ 
+
+
+
+      message: 'Error updating user',
+
+
+
+      detail: error.message
+
+
+
+    });
+
+
+
+
 
 
 
@@ -897,8 +1109,17 @@ async function resetPassword(req, res) {
 
 
       `UPDATE users 
+
+
+
        SET password = $1, updated_at = CURRENT_TIMESTAMP
+
+
+
        WHERE id = $2
+
+
+
        RETURNING id, username, email`,
 
 
@@ -951,6 +1172,10 @@ async function resetPassword(req, res) {
 
 
 
+
+
+
+
   } catch (error) {
 
 
@@ -960,6 +1185,110 @@ async function resetPassword(req, res) {
 
 
     res.status(500).json({ message: 'Error resetting password' });
+
+
+
+  }
+
+
+
+}
+
+
+
+
+
+
+
+/**
+
+
+
+ * Gets current user info
+
+
+
+ * @param {Object} req - Express request object
+
+
+
+ * @param {Object} res - Express response object
+
+
+
+ */
+
+
+
+async function getCurrentUser(req, res) {
+
+
+
+  try {
+
+
+
+    const result = await db.query(
+
+
+
+      'SELECT id, username, email, role, status FROM users WHERE id = $1',
+
+
+
+      [req.user.userId]
+
+
+
+    );
+
+
+
+
+
+
+
+    if (result.rows.length === 0) {
+
+
+
+      return res.status(404).json({ message: 'User not found' });
+
+
+
+    }
+
+
+
+
+
+
+
+    res.json({
+
+
+
+      user: result.rows[0]
+
+
+
+    });
+
+
+
+
+
+
+
+  } catch (error) {
+
+
+
+    console.error('Error fetching current user:', error);
+
+
+
+    res.status(500).json({ message: 'Error fetching user details' });
 
 
 
@@ -999,7 +1328,11 @@ module.exports = {
 
 
 
-  resetPassword
+  resetPassword,
+
+
+
+  getCurrentUser
 
 
 

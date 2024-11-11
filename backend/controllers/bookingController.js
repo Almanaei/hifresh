@@ -8,6 +8,27 @@ async function createBooking(req, res) {
   const userId = req.user.userId;
 
   try {
+    // First verify that the user exists
+    const userCheck = await db.query(
+      'SELECT id FROM users WHERE id = $1',
+      [userId]
+    );
+
+    if (userCheck.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Format dates properly
+    const formattedBookingDate = booking_date ? new Date(booking_date).toISOString() : null;
+    const formattedVisitDate = visit_date ? new Date(visit_date).toISOString() : null;
+
+    // Validate visit date is after booking date if both exist
+    if (formattedBookingDate && formattedVisitDate) {
+      if (new Date(formattedVisitDate) < new Date(formattedBookingDate)) {
+        return res.status(400).json({ message: 'Visit date must be after booking date' });
+      }
+    }
+
     const attachment_url = req.file ? `/uploads/${req.file.filename}` : null;
     const attachment_name = req.file ? req.file.originalname : null;
 
@@ -15,8 +36,18 @@ async function createBooking(req, res) {
       `INSERT INTO bookings 
        (user_id, title, description, booking_date, visit_date, mobile, email, attachment_url, attachment_name) 
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
-       RETURNING id, title, description, booking_date, visit_date, mobile, email, status, attachment_url, attachment_name`,
-      [userId, title, description, booking_date, visit_date || null, mobile || null, email || null, attachment_url, attachment_name]
+       RETURNING *`,
+      [
+        userId, 
+        title, 
+        description, 
+        formattedBookingDate, 
+        formattedVisitDate, 
+        mobile || null, 
+        email || null, 
+        attachment_url, 
+        attachment_name
+      ]
     );
 
     res.status(201).json({
@@ -78,45 +109,78 @@ async function getUserBookings(req, res) {
  * Updates a booking
  */
 async function updateBooking(req, res) {
-  const { id } = req.params;
-  const { title, description, booking_date, visit_date, status, mobile, email } = req.body;
+  const bookingId = req.params.id;
   const userId = req.user.userId;
+  const { title, description, booking_date, visit_date, mobile, email, status } = req.body;
 
   try {
-    const booking = await db.query(
+    // First verify that the booking exists and belongs to the user
+    const bookingCheck = await db.query(
       'SELECT * FROM bookings WHERE id = $1 AND user_id = $2',
-      [id, userId]
+      [bookingId, userId]
     );
 
-    if (booking.rows.length === 0) {
+    if (bookingCheck.rows.length === 0) {
       return res.status(404).json({ message: 'Booking not found' });
     }
 
-    // Handle new attachment if uploaded
-    let attachment_url = booking.rows[0].attachment_url;
-    let attachment_name = booking.rows[0].attachment_name;
+    // Format dates with consistent timezone handling
+    const formattedBookingDate = formatDateWithTimezone(booking_date);
+    const formattedVisitDate = formatDateWithTimezone(visit_date);
+
+    // Validate dates
+    if (booking_date && !formattedBookingDate) {
+      return res.status(400).json({ message: 'Invalid booking date format' });
+    }
+
+    if (visit_date && !formattedVisitDate) {
+      return res.status(400).json({ message: 'Invalid visit date format' });
+    }
+
+    // Validate visit date is after booking date if both exist
+    if (formattedBookingDate && formattedVisitDate) {
+      if (formattedVisitDate < formattedBookingDate) {
+        return res.status(400).json({ message: 'Visit date must be after booking date' });
+      }
+    }
+
+    // Handle file attachment if present
+    let attachment_url = bookingCheck.rows[0].attachment_url;
+    let attachment_name = bookingCheck.rows[0].attachment_name;
 
     if (req.file) {
       attachment_url = `/uploads/${req.file.filename}`;
       attachment_name = req.file.originalname;
     }
 
+    // Update the booking with proper date handling
     const result = await db.query(
       `UPDATE bookings 
        SET title = $1, 
            description = $2, 
            booking_date = $3, 
            visit_date = $4, 
-           status = $5,
-           mobile = $6,
-           email = $7,
+           mobile = $5, 
+           email = $6,
+           status = $7,
            attachment_url = $8,
            attachment_name = $9,
            updated_at = CURRENT_TIMESTAMP
        WHERE id = $10 AND user_id = $11
-       RETURNING id, title, description, booking_date, visit_date, mobile, email, status, attachment_url, attachment_name`,
-      [title, description, booking_date, visit_date || null, status, mobile || null, email || null, 
-       attachment_url, attachment_name, id, userId]
+       RETURNING *`,
+      [
+        title,
+        description,
+        formattedBookingDate ? formattedBookingDate.toISOString() : null,
+        formattedVisitDate ? formattedVisitDate.toISOString() : null,
+        mobile,
+        email,
+        status || bookingCheck.rows[0].status,
+        attachment_url,
+        attachment_name,
+        bookingId,
+        userId
+      ]
     );
 
     res.json({
@@ -152,6 +216,20 @@ async function deleteBooking(req, res) {
     res.status(500).json({ message: 'Error deleting booking' });
   }
 }
+
+// Update the formatDateWithTimezone function
+const formatDateWithTimezone = (dateString) => {
+  if (!dateString) return null;
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return null;
+    // Return the date object instead of ISO string
+    return date;
+  } catch (error) {
+    console.error('Date formatting error:', error);
+    return null;
+  }
+};
 
 module.exports = {
   createBooking,

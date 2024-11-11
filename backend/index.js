@@ -1,155 +1,90 @@
 require('dotenv').config();
-
-
-
 const express = require('express');
-
-
-
 const cors = require('cors');
-
-
-
 const path = require('path');
-
-
-
-const userRoutes = require('./routes/userRoutes');
-
-
-
-const bookingRoutes = require('./routes/bookingRoutes');
-
-
-
-const backupRoutes = require('./routes/backupRoutes');
-
-
-
-const reportRoutes = require('./routes/reportRoutes');
-
-
-
-const analyticsRoutes = require('./routes/analyticsRoutes');
-
-
-
-const certificateRoutes = require('./routes/certificateRoutes');
-
-
+const db = require('./config/db');
 
 const app = express();
 
-
-
-app.use(cors());
-
-
-
-app.use(express.json());
-
-
-
-app.use((req, res, next) => {
-
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-
-  next();
-
-});
-
-
-
-const fs = require('fs');
-
-const uploadsDir = path.join(__dirname, 'uploads');
-
-if (!fs.existsSync(uploadsDir)){
-
-  fs.mkdirSync(uploadsDir, { recursive: true });
-
-}
-
-
-
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
-
-  setHeaders: (res, filePath) => {
-
-    if (path.extname(filePath) === '.pdf') {
-
-      res.set({
-
-        'Content-Type': 'application/pdf',
-
-        'Content-Disposition': 'inline',
-
-        'Cache-Control': 'public, max-age=0'
-
-      });
-
-    }
-
-  }
-
+// Enhanced CORS configuration
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// Body parser middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
+// Static files
+app.use('/uploads', express.static('uploads'));
 
-app.use('/api/users', userRoutes);
+// Create uploads directory if it doesn't exist
+const fs = require('fs');
+if (!fs.existsSync('uploads')) {
+  fs.mkdirSync('uploads');
+}
 
+// Test database connection
+db.pool.connect()
+  .then(() => console.log('Connected to PostgreSQL database'))
+  .catch(err => console.error('Database connection error:', err));
 
+// Routes
+app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/bookings', require('./routes/bookingRoutes'));
+app.use('/api/certificates', require('./routes/certificateRoutes'));
+app.use('/api/backups', require('./routes/backupRoutes'));
+app.use('/api/reports', require('./routes/reportRoutes'));
+app.use('/api/analytics', require('./routes/analyticsRoutes'));
 
-app.use('/api/bookings', bookingRoutes);
-
-
-
-app.use('/api/backups', backupRoutes);
-
-
-
-app.use('/api/reports', reportRoutes);
-
-
-
-app.use('/api/analytics', analyticsRoutes);
-
-
-
-app.use('/api/certificates', certificateRoutes);
-
-
-
-app.use((error, req, res, next) => {
-
-  console.error('Error:', error);
-
-  res.status(error.status || 500).json({
-
-    message: error.message || 'An unexpected error occurred',
-
-    stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-
-  });
-
-});
-
-
-
+// 404 handler
 app.use((req, res) => {
-
-  res.status(404).json({ message: 'Not Found' });
-
+  console.log(`404 - Not Found: ${req.method} ${req.originalUrl}`);
+  res.status(404).json({ 
+    message: 'Route not found',
+    path: req.originalUrl,
+    method: req.method
+  });
 });
 
+// Error handler
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  
+  if (err.name === 'UnauthorizedError') {
+    return res.status(401).json({ message: 'Invalid token' });
+  }
+  
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({ message: err.message });
+  }
+  
+  res.status(500).json({ 
+    message: 'Something went wrong!',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+});
 
-
-const PORT = process.env.PORT || 3000;
-
+// Start server
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+  console.log(`Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
+});
 
-  console.log(`Server running on port ${PORT}`);
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled Promise Rejection:', err);
+  // In production, you might want to do some cleanup here
+});
 
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  // In production, you might want to do some cleanup here
 });
 
 

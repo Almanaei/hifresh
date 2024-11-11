@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import api from '../../services/api';
@@ -19,9 +19,22 @@ function BookingForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [editingBooking, setEditingBooking] = useState(null);
 
   const handleChange = (e) => {
-    setBookingData({ ...bookingData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+    if (name === 'booking_date' || name === 'visit_date') {
+      setBookingData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    } else {
+      setBookingData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleFileChange = (e) => {
@@ -72,16 +85,32 @@ function BookingForm() {
       const formData = new FormData();
       formData.append('title', bookingData.title);
       formData.append('description', bookingData.description);
-      formData.append('booking_date', bookingData.booking_date);
-      formData.append('visit_date', bookingData.visit_date);
+      
+      if (bookingData.booking_date) {
+        const bookingDate = new Date(bookingData.booking_date);
+        formData.append('booking_date', bookingDate.toISOString());
+      }
+      
+      if (bookingData.visit_date) {
+        const visitDate = new Date(bookingData.visit_date);
+        formData.append('visit_date', visitDate.toISOString());
+      }
+      
       formData.append('mobile', bookingData.mobile);
       formData.append('email', bookingData.email);
       if (attachment) {
         formData.append('attachment', attachment);
       }
 
-      await api.createBooking(formData);
-      setSuccess(true);
+      if (editingBooking) {
+        await api.updateBooking(editingBooking.id, formData);
+        setSuccess(true);
+        setEditingBooking(null);
+      } else {
+        await api.createBooking(formData);
+        setSuccess(true);
+      }
+
       setBookingData({
         title: '',
         description: '',
@@ -103,9 +132,67 @@ function BookingForm() {
     }
   };
 
+  const formatDateForInput = useCallback((dateString) => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return '';
+      
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    } catch (error) {
+      console.error('Date formatting error:', error);
+      return '';
+    }
+  }, []);
+
+  const handleEdit = useCallback((booking) => {
+    if (!booking) return;
+    
+    const convertToLocalDate = (dateString) => {
+      if (!dateString) return '';
+      try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return '';
+        
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+      } catch (error) {
+        console.error('Date conversion error:', error);
+        return '';
+      }
+    };
+    
+    setEditingBooking(booking);
+    setBookingData({
+      title: booking.title,
+      description: booking.description,
+      booking_date: convertToLocalDate(booking.booking_date),
+      visit_date: convertToLocalDate(booking.visit_date),
+      mobile: booking.mobile || '',
+      email: booking.email || '',
+    });
+  }, []);
+
+  useEffect(() => {
+    if (editingBooking) {
+      handleEdit(editingBooking);
+    }
+  }, [editingBooking, handleEdit]);
+
   return (
     <div className={`booking-form-container ${isDarkMode ? 'dark-theme' : ''}`}>
-      <h2>Create New Booking</h2>
+      <h2>{editingBooking ? 'Edit Booking' : 'Create New Booking'}</h2>
       {error && <p className="error-message">{error}</p>}
       {success && <p className="success-message">Booking created successfully!</p>}
       

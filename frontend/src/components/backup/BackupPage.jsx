@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import api from '../../services/api';
 import Pagination from '../common/Pagination';
 import './BackupPage.css';
 
 function BackupPage() {
+  const { isDarkMode } = useTheme();
   const [backups, setBackups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -60,59 +62,91 @@ function BackupPage() {
   const currentBackups = backups.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(backups.length / itemsPerPage);
 
-  if (loading) return <div>Loading backups...</div>;
+  if (loading) return (
+    <div className={`backup-page ${isDarkMode ? 'dark-theme' : ''}`}>
+      <div className="loading-state">
+        <div className="loading-spinner"></div>
+        <p>Loading backups...</p>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="backup-page">
+    <div className={`backup-page ${isDarkMode ? 'dark-theme' : ''}`}>
       <h2>Backup Management</h2>
       
       <div className="backup-actions">
         <button 
           onClick={() => handleCreateBackup('weekly')}
           disabled={creating}
+          className="backup-button"
         >
+          <span className="button-icon">📅</span>
           Create Weekly Backup
         </button>
         <button 
           onClick={() => handleCreateBackup('monthly')}
           disabled={creating}
+          className="backup-button"
         >
+          <span className="button-icon">📆</span>
           Create Monthly Backup
         </button>
       </div>
 
-      {error && <p className="error-message">{error}</p>}
-      {creating && <p>Creating backup...</p>}
+      {error && <div className="error-message">{error}</div>}
+      {creating && (
+        <div className="creating-message">
+          <div className="loading-spinner"></div>
+          Creating backup...
+        </div>
+      )}
 
       <div className="backup-list">
         <h3>Available Backups</h3>
         {backups.length === 0 ? (
-          <p>No backups available</p>
+          <div className="empty-state">
+            <p>No backups available</p>
+            <p>Create your first backup using the buttons above</p>
+          </div>
         ) : (
           <>
             <div className="pagination-info">
               Showing {currentBackups.length} of {backups.length} backups
             </div>
-            <table className="backup-table">
-              <thead>
-                <tr>
-                  <th>Filename</th>
-                  <th>Type</th>
-                  <th>Created At</th>
-                  <th>Size</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentBackups.map((backup) => (
-                  <tr key={backup.fileName}>
-                    <td>{backup.fileName}</td>
-                    <td>{backup.type}</td>
-                    <td>{formatDate(backup.createdAt)}</td>
-                    <td>{formatSize(backup.size)}</td>
+            <div className="table-container">
+              <table className="backup-table">
+                <thead>
+                  <tr>
+                    <th>Filename</th>
+                    <th>Type</th>
+                    <th>Created At</th>
+                    <th>Size</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {currentBackups.map((backup) => (
+                    <tr key={backup.fileName}>
+                      <td>{backup.fileName}</td>
+                      <td>
+                        <span className={`backup-type ${backup.type}`}>
+                          {backup.type}
+                        </span>
+                      </td>
+                      <td>{formatDate(backup.createdAt)}</td>
+                      <td>{formatSize(backup.size)}</td>
+                      <td>
+                        <button className="download-button">
+                          <span className="button-icon">💾</span>
+                          Download
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             {totalPages > 1 && (
               <Pagination
                 currentPage={currentPage}

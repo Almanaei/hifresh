@@ -40,9 +40,7 @@ const validateUserRegistration = (req, res, next) => {
  * Validates booking creation input
  */
 const validateBooking = (req, res, next) => {
-  // For multipart/form-data, fields are in req.body
-  const title = req.body.title;
-  const booking_date = req.body.booking_date;
+  const { title, booking_date, visit_date } = req.body;
 
   if (!title || title.trim().length === 0) {
     return res.status(400).json({
@@ -56,11 +54,26 @@ const validateBooking = (req, res, next) => {
     });
   }
 
-  // Ensure booking date is in the future
+  // Validate booking date is in the future
   if (new Date(booking_date) < new Date()) {
     return res.status(400).json({
       message: 'Booking date must be in the future'
     });
+  }
+
+  // Validate visit date if provided
+  if (visit_date) {
+    if (!Date.parse(visit_date)) {
+      return res.status(400).json({
+        message: 'Invalid visit date format'
+      });
+    }
+
+    if (new Date(visit_date) < new Date(booking_date)) {
+      return res.status(400).json({
+        message: 'Visit date must be after booking date'
+      });
+    }
   }
 
   next();
