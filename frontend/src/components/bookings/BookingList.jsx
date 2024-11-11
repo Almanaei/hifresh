@@ -653,13 +653,15 @@ function BookingList() {
               className={`view-button ${viewMode === 'grid' ? 'active' : ''}`}
               onClick={() => setViewMode('grid')}
             >
-              Grid View
+              <span className="button-icon">📱</span>
+              Grid
             </button>
             <button
               className={`view-button ${viewMode === 'list' ? 'active' : ''}`}
               onClick={() => setViewMode('list')}
             >
-              List View
+              <span className="button-icon">📋</span>
+              List
             </button>
           </div>
         </div>
@@ -673,7 +675,11 @@ function BookingList() {
             Showing {filteredBookings.length} of {bookings.length} bookings
           </p>
           
-          {viewMode === 'list' ? (
+          {viewMode === 'grid' ? (
+            <div className="bookings-grid">
+              {filteredBookings.map(booking => renderBookingCard(booking))}
+            </div>
+          ) : (
             <div className="bookings-list">
               <table className="bookings-table">
                 <thead>
@@ -857,10 +863,6 @@ function BookingList() {
                   ))}
                 </tbody>
               </table>
-            </div>
-          ) : (
-            <div className="bookings-grid">
-              {filteredBookings.map(booking => renderBookingCard(booking))}
             </div>
           )}
         </>
