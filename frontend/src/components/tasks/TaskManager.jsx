@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import api from '../../services/api';
 import './TaskManager.css';
 
@@ -9,29 +9,62 @@ function TaskManager() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [users, setUsers] = useState([]);
+  const wsRef = useRef(null);
 
-  useEffect(() => {
-    fetchTasks();
-    fetchUsers();
-  }, []);
-
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     try {
       const response = await api.getTasks();
       setTasks(response.tasks);
     } catch (err) {
       setError(err.message);
     }
-  };
+  }, []);
 
-  const fetchUsers = async () => {
+  const connectWebSocket = useCallback(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const ws = new WebSocket(`ws://localhost:5000?token=${token}`);
+
+    ws.onopen = () => {
+      console.log('WebSocket Connected');
+    };
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === 'task_update') {
+        fetchTasks();
+      }
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket Disconnected');
+      setTimeout(connectWebSocket, 5000);
+    };
+
+    wsRef.current = ws;
+  }, [fetchTasks]);
+
+  const fetchUsers = useCallback(async () => {
     try {
       const response = await api.getUsers();
       setUsers(response.users);
     } catch (err) {
       setError(err.message);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchTasks();
+    fetchUsers();
+    connectWebSocket();
+
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
+  }, [fetchTasks, fetchUsers, connectWebSocket]);
 
   const addTask = async () => {
     if (!newTask.trim()) return;
@@ -55,7 +88,7 @@ function TaskManager() {
 
       setNewTask('');
       setNewUsername('');
-      fetchTasks();
+      await fetchTasks();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -68,7 +101,7 @@ function TaskManager() {
       await api.updateTask(taskId, {
         completed: !tasks.find(t => t.id === taskId).completed
       });
-      fetchTasks();
+      await fetchTasks();
     } catch (err) {
       setError(err.message);
     }
@@ -76,14 +109,14 @@ function TaskManager() {
 
   const deleteTask = async (taskId) => {
     if (!window.confirm('Are you sure you want to delete this task?')) {
-        return;
+      return;
     }
 
     try {
-        await api.deleteTask(taskId);
-        setTasks(tasks.filter(task => task.id !== taskId));
+      await api.deleteTask(taskId);
+      setTasks(tasks.filter(task => task.id !== taskId));
     } catch (err) {
-        setError(err.message);
+      setError(err.message);
     }
   };
 

@@ -129,6 +129,14 @@ async function createTask(req, res) {
             }
         }
 
+        // Broadcast task update to all connected clients
+        if (global.notificationServer) {
+            global.notificationServer.broadcast({
+                type: 'task_update',
+                message: 'Task list updated'
+            });
+        }
+
         debug('Task created successfully:', result.rows[0].id);
         res.status(201).json({ task: result.rows[0] });
     } catch (error) {
@@ -175,6 +183,14 @@ async function updateTask(req, res) {
             result.rows[0].username = userResult.rows[0]?.username;
         }
 
+        // Broadcast task update to all connected clients
+        if (global.notificationServer) {
+            global.notificationServer.broadcast({
+                type: 'task_update',
+                message: 'Task list updated'
+            });
+        }
+
         debug('Task updated successfully:', result.rows[0].id);
         res.json({ task: result.rows[0] });
     } catch (error) {
@@ -202,6 +218,14 @@ async function deleteTask(req, res) {
             return res.status(404).json({ 
                 message: 'Task not found or unauthorized',
                 error: 'TASK_NOT_FOUND'
+            });
+        }
+
+        // Broadcast task update to all connected clients
+        if (global.notificationServer) {
+            global.notificationServer.broadcast({
+                type: 'task_update',
+                message: 'Task list updated'
             });
         }
 
