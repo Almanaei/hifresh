@@ -34,4 +34,10 @@ router.put('/:id', verifyToken, (req, res, next) => {
   taskController.updateTask(req, res, next);
 });
 
+// Delete task
+router.delete('/:id', verifyToken, (req, res, next) => {
+  console.log('DELETE /tasks/:id - Before controller');
+  taskController.deleteTask(req, res, next);
+});
+
 module.exports = router; 

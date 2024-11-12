@@ -74,6 +74,19 @@ function TaskManager() {
     }
   };
 
+  const deleteTask = async (taskId) => {
+    if (!window.confirm('Are you sure you want to delete this task?')) {
+        return;
+    }
+
+    try {
+        await api.deleteTask(taskId);
+        setTasks(tasks.filter(task => task.id !== taskId));
+    } catch (err) {
+        setError(err.message);
+    }
+  };
+
   return (
     <div className="task-manager">
       <div className="card">
@@ -119,6 +132,7 @@ function TaskManager() {
                 <th className="w-[50px]">Done</th>
                 <th>Task</th>
                 <th>Assigned To</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -142,6 +156,16 @@ function TaskManager() {
                     </label>
                   </td>
                   <td>{task.username || 'Unassigned'}</td>
+                  <td>
+                    <button
+                      onClick={() => deleteTask(task.id)}
+                      className="delete-button"
+                      title="Delete task"
+                    >
+                      <span className="button-icon">🗑️</span>
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -154,8 +154,39 @@ async function updateTask(req, res) {
     }
 }
 
+async function deleteTask(req, res) {
+    const { id } = req.params;
+    debug('Deleting task:', { id, userId: req.user.userId });
+
+    try {
+        // Verify task exists and belongs to user
+        const result = await db.query(`
+            DELETE FROM tasks 
+            WHERE id = $1 AND created_by = $2
+            RETURNING *
+        `, [id, req.user.userId]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ 
+                message: 'Task not found or unauthorized',
+                error: 'TASK_NOT_FOUND'
+            });
+        }
+
+        debug('Task deleted successfully:', id);
+        res.json({ message: 'Task deleted successfully' });
+    } catch (error) {
+        debug('Error in deleteTask:', error);
+        res.status(500).json({ 
+            message: 'Error deleting task',
+            error: error.message
+        });
+    }
+}
+
 module.exports = {
     getTasks,
     createTask,
-    updateTask
+    updateTask,
+    deleteTask
 }; 

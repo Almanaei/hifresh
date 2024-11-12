@@ -317,6 +317,20 @@ export const api = {
     } catch (error) {
       throw new Error(error.message || 'Failed to update task');
     }
+  },
+
+  deleteTask: async (taskId) => {
+    try {
+      const response = await fetch(`${API_URL}/tasks/${taskId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      return handleResponse(response);
+    } catch (error) {
+      throw new Error(error.message || 'Failed to delete task');
+    }
   }
 };
 

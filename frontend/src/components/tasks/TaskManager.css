@@ -138,4 +138,38 @@
 
 .dark-theme .completed-task {
   color: #6b7280;
+}
+
+/* Add these styles for the delete button */
+.delete-button {
+    padding: 6px 12px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.875rem;
+}
+
+.delete-button:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+
+.button-icon {
+    font-size: 1.1em;
+}
+
+/* Dark theme support */
+.dark-theme .delete-button {
+    background: #dc2626;
+}
+
+.dark-theme .delete-button:hover {
+    background: #b91c1c;
 } 
