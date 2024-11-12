@@ -16,6 +16,7 @@ import BackupPage from './components/backup/BackupPage';
 import UserList from './components/users/UserList';
 import ReportPage from './components/reports/ReportPage';
 import AnalyticsPage from './components/analytics/AnalyticsPage';
+import TaskManager from './components/tasks/TaskManager';
 import PrivateRoute from './components/PrivateRoute';
 
 function App() {
@@ -117,6 +118,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <AnalyticsPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/tasks"
+              element={
+                <PrivateRoute>
+                  <TaskManager />
                 </PrivateRoute>
               }
             />

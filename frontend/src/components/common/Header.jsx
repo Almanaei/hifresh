@@ -27,26 +27,6 @@ function Header({ isAuthenticated, onLogout }) {
           </Link>
         </div>
 
-        <div className="header-right">
-          <button 
-            className="theme-toggle"
-            onClick={toggleDarkMode}
-            aria-label="Toggle dark mode"
-          >
-            {isDarkMode ? '🌙' : '☀️'}
-          </button>
-
-          <button 
-            className={`mobile-menu-button ${isMobileMenuOpen ? 'active' : ''}`}
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            <span></span>
-            <span></span>
-            <span></span>
-          </button>
-        </div>
-
         <nav className={`header-nav ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
           {isAuthenticated ? (
             <>
@@ -95,8 +75,16 @@ function Header({ isAuthenticated, onLogout }) {
                 className={`nav-link ${isActive('/analytics') ? 'active' : ''}`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <span className="nav-icon">📈</span>
+                <span className="nav-icon">📊</span>
                 Analytics
+              </Link>
+              <Link 
+                to="/tasks" 
+                className={`nav-link ${isActive('/tasks') ? 'active' : ''}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <span className="nav-icon">✅</span>
+                Tasks
               </Link>
               <div className="nav-divider"></div>
               <button onClick={handleLogout} className="logout-button">
@@ -123,6 +111,26 @@ function Header({ isAuthenticated, onLogout }) {
             </>
           )}
         </nav>
+
+        <div className="header-right">
+          <button 
+            className="theme-toggle"
+            onClick={toggleDarkMode}
+            aria-label="Toggle dark mode"
+          >
+            {isDarkMode ? '🌙' : '☀️'}
+          </button>
+
+          <button 
+            className={`mobile-menu-button ${isMobileMenuOpen ? 'active' : ''}`}
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
       </div>
     </header>
   );

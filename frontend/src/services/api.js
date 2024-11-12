@@ -273,6 +273,51 @@ export const api = {
       throw new Error(error.message || 'Failed to download backup');
     }
   },
+
+  getTasks: async () => {
+    try {
+      const response = await fetch(`${API_URL}/tasks`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      return handleResponse(response);
+    } catch (error) {
+      throw new Error(error.message || 'Failed to fetch tasks');
+    }
+  },
+
+  createTask: async (taskData) => {
+    try {
+      const response = await fetch(`${API_URL}/tasks`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(taskData)
+      });
+      return handleResponse(response);
+    } catch (error) {
+      throw new Error(error.message || 'Failed to create task');
+    }
+  },
+
+  updateTask: async (taskId, taskData) => {
+    try {
+      const response = await fetch(`${API_URL}/tasks/${taskId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(taskData)
+      });
+      return handleResponse(response);
+    } catch (error) {
+      throw new Error(error.message || 'Failed to update task');
+    }
+  }
 };
 
 export default api; 
