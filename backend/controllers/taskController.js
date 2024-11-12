@@ -105,11 +105,24 @@ async function createTask(req, res) {
 
             // Create notification for assigned user
             if (assigned_to !== req.user.userId) {
+                const notification = {
+                    type: 'task_assigned',
+                    title: 'New Task Assigned',
+                    message: `You have been assigned a new task: ${text}`,
+                    taskId: result.rows[0].id
+                };
+
+                // Send real-time notification
+                if (global.notificationServer) {
+                    global.notificationServer.sendNotification(assigned_to, notification);
+                }
+
+                // Also save to database
                 await createNotification(
                     assigned_to,
-                    'task_assigned',
-                    'New Task Assigned',
-                    `You have been assigned a new task: ${text}`,
+                    notification.type,
+                    notification.title,
+                    notification.message,
                     result.rows[0].id,
                     'task'
                 );

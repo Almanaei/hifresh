@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../../services/api';
 import './NotificationBell.css';
 import { useTheme } from '../../context/ThemeContext';
@@ -8,6 +8,7 @@ function NotificationBell() {
     const [showDropdown, setShowDropdown] = useState(false);
     const [error, setError] = useState(null);
     const { isDarkMode } = useTheme();
+    const wsRef = useRef(null);
 
     const fetchNotifications = useCallback(async () => {
         try {
@@ -20,12 +21,67 @@ function NotificationBell() {
         }
     }, []);
 
+    const connectWebSocket = useCallback(() => {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const ws = new WebSocket(`ws://localhost:5000?token=${token}`);
+
+        ws.onopen = () => {
+            console.log('WebSocket Connected');
+        };
+
+        ws.onmessage = (event) => {
+            const notification = JSON.parse(event.data);
+            setNotifications(prev => [notification, ...prev]);
+            
+            // Show browser notification
+            if (Notification.permission === 'granted') {
+                new Notification(notification.title, {
+                    body: notification.message,
+                    icon: '/path/to/icon.png'
+                });
+            }
+        };
+
+        ws.onclose = () => {
+            console.log('WebSocket Disconnected');
+            // Attempt to reconnect after 5 seconds
+            setTimeout(connectWebSocket, 5000);
+        };
+
+        wsRef.current = ws;
+
+        return () => {
+            if (wsRef.current) {
+                wsRef.current.close();
+            }
+        };
+    }, []);
+
     useEffect(() => {
+        // Request notification permission
+        if (Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+
+        // Connect to WebSocket
+        connectWebSocket();
+
+        // Fetch existing notifications
         fetchNotifications();
-        // Poll for new notifications every 30 seconds
-        const interval = setInterval(fetchNotifications, 30000);
-        return () => clearInterval(interval);
-    }, [fetchNotifications]);
+
+        // Set up polling interval
+        const interval = setInterval(fetchNotifications, 60000);
+
+        // Cleanup function
+        return () => {
+            clearInterval(interval);
+            if (wsRef.current) {
+                wsRef.current.close();
+            }
+        };
+    }, [connectWebSocket, fetchNotifications]);
 
     const handleMarkAsRead = async (notificationId) => {
         try {
