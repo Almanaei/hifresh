@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import './Header.css';
+import NotificationBell from './NotificationBell';
 
 function Header({ isAuthenticated, onLogout }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -113,6 +114,7 @@ function Header({ isAuthenticated, onLogout }) {
         </nav>
 
         <div className="header-right">
+          <NotificationBell />
           <button 
             className="theme-toggle"
             onClick={toggleDarkMode}

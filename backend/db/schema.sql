@@ -58,3 +58,20 @@ ADD CONSTRAINT bookings_user_id_fkey
     FOREIGN KEY (user_id) 
     REFERENCES users(id) 
     ON DELETE CASCADE;
+
+-- Add this after your other table creations
+CREATE TABLE IF NOT EXISTS notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    type VARCHAR(50) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    message TEXT,
+    read BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    related_id INTEGER,
+    related_type VARCHAR(50)
+);
+
+-- Create indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(read);

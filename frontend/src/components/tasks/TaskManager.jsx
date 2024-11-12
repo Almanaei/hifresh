@@ -104,19 +104,21 @@ function TaskManager() {
               onChange={(e) => setNewTask(e.target.value)}
               className="task-text-input"
             />
-            <input
-              type="text"
-              placeholder="Assign to username"
-              value={newUsername}
-              onChange={(e) => setNewUsername(e.target.value)}
-              className="username-input"
-              list="users-list"
-            />
-            <datalist id="users-list">
-              {users.map(user => (
-                <option key={user.id} value={user.username} />
-              ))}
-            </datalist>
+            <div className="username-input-wrapper">
+              <input
+                type="text"
+                placeholder="Assign to username"
+                value={newUsername}
+                onChange={(e) => setNewUsername(e.target.value)}
+                className="username-input"
+                list="users-list"
+              />
+              <datalist id="users-list">
+                {users.map(user => (
+                  <option key={user.id} value={user.username} />
+                ))}
+              </datalist>
+            </div>
             <button 
               onClick={addTask} 
               disabled={isLoading}

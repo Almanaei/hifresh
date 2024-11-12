@@ -35,6 +35,7 @@ app.use('/api/certificates', require('./routes/certificateRoutes'));
 app.use('/api/backups', require('./routes/backupRoutes'));
 app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/analytics', require('./routes/analyticsRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
 
 // 404 handler
 app.use((req, res) => {

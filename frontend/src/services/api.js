@@ -331,6 +331,33 @@ export const api = {
     } catch (error) {
       throw new Error(error.message || 'Failed to delete task');
     }
+  },
+
+  getNotifications: async () => {
+    try {
+      const response = await fetch(`${API_URL}/notifications`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      return handleResponse(response);
+    } catch (error) {
+      throw new Error(error.message || 'Failed to fetch notifications');
+    }
+  },
+
+  markNotificationAsRead: async (notificationId) => {
+    try {
+      const response = await fetch(`${API_URL}/notifications/${notificationId}/read`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      return handleResponse(response);
+    } catch (error) {
+      throw new Error(error.message || 'Failed to update notification');
+    }
   }
 };
 

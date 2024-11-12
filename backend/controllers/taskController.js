@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { createNotification } = require('./notificationController');
 
 // Debug logging function
 const debug = (message, data = '') => {
@@ -36,11 +37,17 @@ async function getTasks(req, res) {
             debug('Created tasks table');
         }
 
+        // Modified query to get tasks created by OR assigned to the user
         const result = await db.query(`
-            SELECT t.*, u.username 
+            SELECT t.*, u.username,
+                   CASE 
+                       WHEN t.created_by = $1 THEN 'created'
+                       WHEN t.assigned_to = $1 THEN 'assigned'
+                   END as relationship
             FROM tasks t
             LEFT JOIN users u ON t.assigned_to = u.id
-            WHERE t.created_by = $1
+            WHERE t.created_by = $1 
+               OR t.assigned_to = $1
             ORDER BY t.created_at DESC
         `, [req.user.userId]);
 
@@ -95,6 +102,18 @@ async function createTask(req, res) {
                 [result.rows[0].assigned_to]
             );
             result.rows[0].username = userResult.rows[0]?.username;
+
+            // Create notification for assigned user
+            if (assigned_to !== req.user.userId) {
+                await createNotification(
+                    assigned_to,
+                    'task_assigned',
+                    'New Task Assigned',
+                    `You have been assigned a new task: ${text}`,
+                    result.rows[0].id,
+                    'task'
+                );
+            }
         }
 
         debug('Task created successfully:', result.rows[0].id);
