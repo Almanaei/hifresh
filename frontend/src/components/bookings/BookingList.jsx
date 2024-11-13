@@ -33,15 +33,17 @@ function BookingList() {
   // Wrap fetchBookings in useCallback
   const fetchBookings = useCallback(async () => {
     try {
-      const response = await api.getBookings(currentPage);
+      setLoading(true);
+      // Modified to fetch all bookings instead of just user's bookings
+      const response = await api.getAllBookings(currentPage);
       setBookings(response.bookings);
       setPagination(response.pagination);
     } catch (err) {
-      setError(err.message);
+      setError('Failed to fetch bookings: ' + err.message);
     } finally {
       setLoading(false);
     }
-  }, [currentPage]); // Add currentPage as dependency
+  }, [currentPage]);
 
   useEffect(() => {
     fetchBookings();
@@ -245,6 +247,7 @@ function BookingList() {
     return 'low';
   };
 
+  // Update renderBookingCard to include user info and handle permissions
   const renderBookingCard = (booking) => {
     const timeOfDay = getTimeOfDay(booking.booking_date);
     const priority = getPriority(booking);
@@ -388,6 +391,9 @@ function BookingList() {
           <div className="booking-card-content">
             <div className="booking-card-header">
               <h3>{booking.title}</h3>
+              <small className="booking-creator">
+                Created by: {booking.creator_name || 'Anonymous'}
+              </small>
               <span className={`priority-badge priority-${priority}`}>
                 {priority === 'high' && '🔥'}
                 {priority === 'medium' && '⏰'}
@@ -607,12 +613,67 @@ function BookingList() {
 
   const filteredBookings = filterBookings(bookings);
 
+  // Update table view to include creator info and handle permissions
+  const renderTableRow = (booking, index) => (
+    <tr key={booking.id}>
+      <td>{calculateSerialNumber(index)}</td>
+      <td>{booking.title}</td>
+      <td>{booking.description || 'N/A'}</td>
+      <td>{formatDate(booking.booking_date)}</td>
+      <td>
+        <span className={`status status-${booking.status}`}>
+          {booking.status}
+        </span>
+      </td>
+      <td>{booking.creator_name || 'Anonymous'}</td>
+      <td>
+        {booking.attachment_url ? (
+          <button
+            onClick={(e) => handleAttachmentClick(e, {
+              url: booking.attachment_url,
+              name: booking.attachment_name
+            })}
+            className="attachment-button"
+          >
+            View
+          </button>
+        ) : (
+          'None'
+        )}
+      </td>
+      <td>{formatDate(booking.created_at)}</td>
+      <td className="action-buttons">
+        <button 
+          onClick={() => handleView(booking)}
+          className="view-button"
+          title="View Details"
+        >
+          View
+        </button>
+        <button 
+          onClick={() => handleEdit(booking)}
+          className="edit-button"
+          title="Edit Booking"
+        >
+          Edit
+        </button>
+        <button 
+          onClick={() => handleDelete(booking.id)}
+          className="delete-button"
+          title="Delete Booking"
+        >
+          Delete
+        </button>
+      </td>
+    </tr>
+  );
+
   if (loading) return <div>Loading bookings...</div>;
   if (error) return <div className="error-message">{error}</div>;
 
   return (
     <div className={`booking-list ${isDarkMode ? 'dark-theme' : ''}`}>
-      <h2>Your Bookings</h2>
+      <h2>All Bookings</h2>
 
       {/* Filter and Sort Controls */}
       <div className="booking-controls">
@@ -690,178 +751,14 @@ function BookingList() {
                     <th>Description</th>
                     <th>Date</th>
                     <th>Status</th>
+                    <th>Created By</th>
                     <th>Attachment</th>
                     <th>Created</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredBookings.map((booking, index) => (
-                    <tr key={booking.id}>
-                      {editingBooking && editingBooking.id === booking.id ? (
-                        <td colSpan="8">
-                          <form onSubmit={handleUpdate} className="edit-form">
-                            <div className="form-group">
-                              <label>Title:</label>
-                              <input
-                                type="text"
-                                name="title"
-                                value={editingBooking.title}
-                                onChange={handleEditChange}
-                                required
-                              />
-                            </div>
-                            <div className="form-group">
-                              <label>Description:</label>
-                              <textarea
-                                name="description"
-                                value={editingBooking.description || ''}
-                                onChange={handleEditChange}
-                                rows="4"
-                              />
-                            </div>
-                            <div className="form-group">
-                              <label>Date:</label>
-                              <input
-                                type="datetime-local"
-                                name="booking_date"
-                                value={editingBooking.booking_date || ''}
-                                onChange={handleEditChange}
-                                required
-                              />
-                            </div>
-                            <div className="form-group">
-                              <label>Status:</label>
-                              <select
-                                name="status"
-                                value={editingBooking.status}
-                                onChange={handleEditChange}
-                              >
-                                <option value="pending">Pending</option>
-                                <option value="confirmed">Confirmed</option>
-                                <option value="cancelled">Cancelled</option>
-                              </select>
-                            </div>
-                            <div className="form-group">
-                              <label>Visit Date:</label>
-                              <input
-                                type="datetime-local"
-                                name="visit_date"
-                                value={editingBooking.visit_date ? new Date(editingBooking.visit_date).toISOString().slice(0, 16) : ''}
-                                onChange={handleEditChange}
-                                min={editingBooking.booking_date ? new Date(editingBooking.booking_date).toISOString().slice(0, 16) : ''}
-                              />
-                            </div>
-                            <div className="form-group">
-                              <label>Mobile:</label>
-                              <input
-                                type="tel"
-                                name="mobile"
-                                value={editingBooking.mobile || ''}
-                                onChange={handleEditChange}
-                                placeholder="Enter mobile number"
-                              />
-                            </div>
-                            <div className="form-group">
-                              <label>Email:</label>
-                              <input
-                                type="email"
-                                name="email"
-                                value={editingBooking.email || ''}
-                                onChange={handleEditChange}
-                                placeholder="Enter email address"
-                              />
-                            </div>
-                            <div className="form-group">
-                              <label>Attachment:</label>
-                              <input
-                                type="file"
-                                name="attachment"
-                                onChange={handleEditChange}
-                                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
-                              />
-                              {editingBooking.attachment_url && (
-                                <div className="current-attachment">
-                                  <p>Current: {editingBooking.attachment_name}</p>
-                                  <button
-                                    type="button"
-                                    onClick={(e) => handleAttachmentClick(e, {
-                                      url: editingBooking.attachment_url,
-                                      name: editingBooking.attachment_name
-                                    })}
-                                    className="attachment-button"
-                                  >
-                                    View
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                            <div className="button-group">
-                              <button type="submit">Save</button>
-                              <button 
-                                type="button" 
-                                onClick={() => setEditingBooking(null)}
-                                className="cancel-button"
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </form>
-                        </td>
-                      ) : (
-                        <>
-                          <td>{calculateSerialNumber(index)}</td>
-                          <td>{booking.title}</td>
-                          <td>{booking.description || 'N/A'}</td>
-                          <td>{formatDate(booking.booking_date)}</td>
-                          <td>
-                            <span className={`status status-${booking.status}`}>
-                              {booking.status}
-                            </span>
-                          </td>
-                          <td>
-                            {booking.attachment_url ? (
-                              <button
-                                onClick={(e) => handleAttachmentClick(e, {
-                                  url: booking.attachment_url,
-                                  name: booking.attachment_name
-                                })}
-                                className="attachment-button"
-                              >
-                                View
-                              </button>
-                            ) : (
-                              'None'
-                            )}
-                          </td>
-                          <td>{formatDate(booking.created_at)}</td>
-                          <td className="action-buttons">
-                            <button 
-                              onClick={() => handleView(booking)}
-                              className="view-button"
-                              title="View Details"
-                            >
-                              View
-                            </button>
-                            <button 
-                              onClick={() => handleEdit(booking)}
-                              className="edit-button"
-                              title="Edit Booking"
-                            >
-                              Edit
-                            </button>
-                            <button 
-                              onClick={() => handleDelete(booking.id)}
-                              className="delete-button"
-                              title="Delete Booking"
-                            >
-                              Delete
-                            </button>
-                          </td>
-                        </>
-                      )}
-                    </tr>
-                  ))}
+                  {filteredBookings.map((booking, index) => renderTableRow(booking, index))}
                 </tbody>
               </table>
             </div>

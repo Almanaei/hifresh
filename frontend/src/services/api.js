@@ -1,4 +1,19 @@
+import axios from 'axios';
+
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+const getAuthHeaders = () => ({
+  'Authorization': `Bearer ${localStorage.getItem('token')}`,
+  'Content-Type': 'application/json'
+});
+
+const handleApiError = (error) => {
+  console.error('API Error:', error);
+  if (error.response) {
+    throw new Error(error.response.data.message || 'An error occurred');
+  }
+  throw new Error(error.message || 'Network error occurred');
+};
 
 const handleResponse = async (response) => {
   if (!response.ok) {
@@ -245,14 +260,15 @@ export const api = {
     return handleResponse(response);
   },
 
-  getAllBookings: async () => {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/bookings/all`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    return handleResponse(response);
+  getAllBookings: async (page = 1) => {
+    try {
+      const response = await axios.get(`${API_URL}/bookings/all?page=${page}`, {
+        headers: getAuthHeaders()
+      });
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
   },
 
   downloadBackup: async (fileName) => {
@@ -357,6 +373,20 @@ export const api = {
       return handleResponse(response);
     } catch (error) {
       throw new Error(error.message || 'Failed to update notification');
+    }
+  },
+
+  clearNotifications: async () => {
+    try {
+      const response = await fetch(`${API_URL}/notifications/clear`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      return handleResponse(response);
+    } catch (error) {
+      throw new Error(error.message || 'Failed to clear notifications');
     }
   }
 };

@@ -127,6 +127,19 @@ function NotificationBell() {
         return date.toLocaleDateString();
     };
 
+    const handleClearAll = async () => {
+        try {
+            await api.clearNotifications();
+            // Clear all notifications from state
+            setNotifications([]);
+            // Close dropdown after clearing
+            setShowDropdown(false);
+        } catch (error) {
+            console.error('Error clearing notifications:', error);
+            setError('Failed to clear notifications');
+        }
+    };
+
     return (
         <div className={`notification-bell ${isDarkMode ? 'dark-theme' : ''}`}>
             <button 
@@ -146,17 +159,17 @@ function NotificationBell() {
                 <div className="notification-dropdown">
                     <div className="notification-header">
                         <h3>Notifications</h3>
-                        {notifications.length > 0 && (
-                            <button 
-                                className="mark-all-read"
-                                onClick={() => notifications
-                                    .filter(n => !n.read)
-                                    .forEach(n => handleMarkAsRead(n.id))
-                                }
-                            >
-                                Mark all read
-                            </button>
-                        )}
+                        <div className="notification-actions">
+                            {notifications.length > 0 && (
+                                <button 
+                                    className="clear-all-button"
+                                    onClick={handleClearAll}
+                                    title="Clear all notifications"
+                                >
+                                    Clear All
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     {error ? (

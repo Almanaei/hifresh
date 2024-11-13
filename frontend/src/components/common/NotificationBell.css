@@ -188,4 +188,36 @@
 
 .dark-theme .mark-all-read:hover {
     background: #374151;
+}
+
+/* Add these styles */
+.notification-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.clear-all-button {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    font-size: 0.875rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.clear-all-button:hover {
+    background: #f3f4f6;
+    color: #2563eb;
+}
+
+/* Dark theme */
+.dark-theme .clear-all-button {
+    color: #60a5fa;
+}
+
+.dark-theme .clear-all-button:hover {
+    background: #374151;
+    color: #93c5fd;
 } 

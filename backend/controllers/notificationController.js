@@ -45,8 +45,23 @@ async function createNotification(userId, type, title, message, relatedId = null
     }
 }
 
+async function clearNotifications(req, res) {
+    try {
+        await db.query(`
+            DELETE FROM notifications 
+            WHERE user_id = $1
+        `, [req.user.userId]);
+
+        res.json({ message: 'All notifications cleared' });
+    } catch (error) {
+        console.error('Error clearing notifications:', error);
+        res.status(500).json({ message: 'Error clearing notifications' });
+    }
+}
+
 module.exports = {
     getNotifications,
     markAsRead,
-    createNotification
+    createNotification,
+    clearNotifications
 }; 
