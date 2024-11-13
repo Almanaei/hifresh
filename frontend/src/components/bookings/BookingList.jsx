@@ -405,7 +405,7 @@ function BookingList() {
             <div className="booking-card-header">
               <h3>{booking.title}</h3>
               <small className="booking-creator">
-                Created by: {booking.creator_name || 'Anonymous'}
+                Created by: {booking.username || booking.user?.name || 'Anonymous'}
               </small>
               <span className={`priority-badge priority-${priority}`}>
                 {priority === 'high' && '🔥'}
@@ -653,7 +653,7 @@ function BookingList() {
           {booking.status}
         </span>
       </td>
-      <td>{booking.creator_name || 'Anonymous'}</td>
+      <td>{booking.username || booking.user?.name || 'Anonymous'}</td>
       <td>
         {booking.attachment_url ? (
           <button
@@ -871,6 +871,10 @@ function BookingList() {
                   <p>{viewingBooking.email}</p>
                 </div>
               )}
+              <div className="detail-group">
+                <label>Created By:</label>
+                <p>{viewingBooking.username || viewingBooking.user?.name || 'Anonymous'}</p>
+              </div>
             </div>
           </div>
         </div>
