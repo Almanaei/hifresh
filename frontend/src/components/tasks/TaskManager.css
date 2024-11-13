@@ -303,4 +303,160 @@ option:hover {
 
 .dark-theme option:hover {
   background-color: #374151;
+}
+
+/* Remove dropdown arrows from username input */
+.username-input::-webkit-calendar-picker-indicator,
+.dark-theme .username-input::-webkit-calendar-picker-indicator {
+  display: none !important;
+  opacity: 0;
+}
+
+.username-input,
+.dark-theme .username-input {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-image: none !important;
+  padding-right: 12px !important;
+}
+
+/* Remove the default arrow in IE */
+.username-input::-ms-expand,
+.dark-theme .username-input::-ms-expand {
+  display: none;
+}
+
+/* Remove any custom background images that might show arrows */
+.username-input,
+.dark-theme .username-input {
+  background: var(--input-background) !important;
+}
+
+/* Dark theme variables */
+.dark-theme.task-manager {
+  background-color: #1a1a1a;
+  color: #e5e7eb;
+}
+
+.dark-theme .card {
+  background: #2d2d2d;
+  border: 1px solid #404040;
+}
+
+.dark-theme .card-header {
+  border-bottom-color: #404040;
+}
+
+.dark-theme .card-header h2 {
+  color: #e5e7eb;
+}
+
+.dark-theme .task-text-input,
+.dark-theme .username-input {
+  background-color: #1f2937;
+  border-color: #404040;
+  color: #e5e7eb;
+}
+
+.dark-theme .task-text-input::placeholder,
+.dark-theme .username-input::placeholder {
+  color: #9ca3af;
+}
+
+.dark-theme .task-text-input:focus,
+.dark-theme .username-input:focus {
+  border-color: #3b82f6;
+  background-color: #1f2937;
+}
+
+.dark-theme .add-task-button {
+  background: #3b82f6;
+}
+
+.dark-theme .add-task-button:hover {
+  background: #2563eb;
+}
+
+.dark-theme .add-task-button:disabled {
+  background: #4b5563;
+}
+
+.dark-theme .tasks-table th {
+  background: #374151;
+  color: #e5e7eb;
+}
+
+.dark-theme .tasks-table td {
+  border-bottom-color: #404040;
+  color: #e5e7eb;
+}
+
+.dark-theme .completed-task {
+  color: #9ca3af;
+}
+
+.dark-theme .delete-button {
+  background: #dc2626;
+}
+
+.dark-theme .delete-button:hover {
+  background: #b91c1c;
+}
+
+.dark-theme .task-checkbox {
+  accent-color: #3b82f6;
+}
+
+.dark-theme .error-message {
+  background: #7f1d1d;
+  color: #fecaca;
+}
+
+/* Improve input contrast in dark mode */
+.dark-theme .task-text-input,
+.dark-theme .username-input {
+  background-color: #1f2937;
+  border-color: #4b5563;
+  color: #e5e7eb;
+}
+
+.dark-theme .task-text-input:hover,
+.dark-theme .username-input:hover {
+  border-color: #6b7280;
+}
+
+.dark-theme .task-text-input:focus,
+.dark-theme .username-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* Table hover effects in dark mode */
+.dark-theme .tasks-table tbody tr:hover {
+  background-color: #374151;
+}
+
+/* Checkbox styling in dark mode */
+.dark-theme .task-checkbox {
+  border-color: #6b7280;
+}
+
+.dark-theme .task-checkbox:checked {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+/* Button states in dark mode */
+.dark-theme .add-task-button:disabled {
+  background-color: #4b5563;
+  cursor: not-allowed;
+}
+
+.dark-theme .delete-button {
+  background-color: #dc2626;
+}
+
+.dark-theme .delete-button:hover {
+  background-color: #b91c1c;
 } 

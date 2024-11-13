@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import api from '../../services/api';
 import './TaskManager.css';
+import { useTheme } from '../../context/ThemeContext';
 
 function TaskManager() {
+  const { isDarkMode } = useTheme();
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState('');
   const [newUsername, setNewUsername] = useState('');
@@ -121,7 +123,7 @@ function TaskManager() {
   };
 
   return (
-    <div className="task-manager">
+    <div className={`task-manager ${isDarkMode ? 'dark-theme' : ''}`}>
       <div className="card">
         <div className="card-header">
           <h2>Task Manager</h2>

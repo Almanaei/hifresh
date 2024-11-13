@@ -5,8 +5,10 @@ import Header from './components/common/Header';
 import { ThemeProvider } from './context/ThemeContext';
 import './styles/theme.css';
 
-// Import your components
-import Home from './components/Home';
+// Update this import path
+import Home from './pages/Home';
+
+// Import your other components
 import LoginForm from './components/auth/LoginForm';
 import SignupForm from './components/auth/SignupForm';
 import BookingForm from './components/bookings/BookingForm';

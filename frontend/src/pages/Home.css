@@ -1,0 +1,167 @@
+.home-page {
+  padding: 2rem;
+  min-height: calc(100vh - 60px);
+  background-color: var(--background-primary);
+}
+
+.welcome-section {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: var(--card-background);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-section h1 {
+  font-size: 2.5rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.welcome-section p {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.action-buttons button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  font-size: 1rem;
+}
+
+.get-started {
+  background: #3b82f6;
+  color: white;
+}
+
+.get-started:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+}
+
+.login {
+  background: white;
+  color: #3b82f6;
+  border: 1px solid #3b82f6 !important;
+}
+
+.login:hover {
+  background: #f0f9ff;
+  transform: translateY(-2px);
+}
+
+/* Dark theme adjustments */
+.dark-theme.home-page {
+  background-color: #1a1a1a;
+}
+
+.dark-theme .welcome-section {
+  background: #2d2d2d;
+}
+
+.dark-theme .welcome-section h1 {
+  color: #e5e7eb;
+}
+
+.dark-theme .welcome-section p {
+  color: #9ca3af;
+}
+
+.dark-theme .login {
+  background: #2d2d2d;
+  color: #60a5fa;
+  border-color: #60a5fa !important;
+}
+
+.dark-theme .login:hover {
+  background: #374151;
+}
+
+/* Features Section */
+.features-section {
+  padding: 4rem 2rem;
+  background: var(--background-secondary);
+  border-radius: 12px;
+  margin-top: 3rem;
+}
+
+.features-section h2 {
+  text-align: center;
+  font-size: 2rem;
+  color: var(--text-primary);
+  margin-bottom: 2rem;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.feature-card {
+  background: var(--card-background);
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 20px -6px rgba(0, 0, 0, 0.15);
+}
+
+.feature-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  display: inline-block;
+}
+
+.feature-card h3 {
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.feature-card p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Dark theme adjustments */
+.dark-theme .features-section {
+  background: #2d2d2d;
+}
+
+.dark-theme .feature-card {
+  background: #1f2937;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .features-section {
+    padding: 2rem 1rem;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+} 

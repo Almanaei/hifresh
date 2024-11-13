@@ -1,0 +1,147 @@
+.quick-actions {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.quick-actions h2 {
+  font-size: 1.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+}
+
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.action-card {
+  display: flex;
+  align-items: center;
+  padding: 1.5rem;
+  border: none;
+  border-radius: 12px;
+  background: var(--card-background);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+              0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.action-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+              0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.action-card .icon {
+  font-size: 2rem;
+  margin-right: 1rem;
+  padding: 1rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-card .content {
+  flex: 1;
+}
+
+.action-card h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+}
+
+.action-card p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+/* Specific styles for each card */
+.action-card.booking {
+  background: linear-gradient(145deg, #3b82f6, #2563eb);
+}
+
+.action-card.booking .icon {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.action-card.certificate {
+  background: linear-gradient(145deg, #10b981, #059669);
+}
+
+.action-card.certificate .icon {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.action-card.task {
+  background: linear-gradient(145deg, #8b5cf6, #6d28d9);
+}
+
+.action-card.task .icon {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Common styles for all cards */
+.action-card.booking,
+.action-card.certificate,
+.action-card.task {
+  color: white;
+}
+
+.action-card.booking h3,
+.action-card.certificate h3,
+.action-card.task h3,
+.action-card.booking p,
+.action-card.certificate p,
+.action-card.task p {
+  color: white;
+}
+
+/* Dark theme adjustments */
+.dark-theme .action-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .quick-actions {
+    padding: 1rem;
+  }
+
+  .action-card {
+    padding: 1.25rem;
+  }
+
+  .action-card .icon {
+    font-size: 1.5rem;
+    padding: 0.75rem;
+  }
+}
+
+/* Hover animations */
+.action-card .icon {
+  transition: transform 0.3s ease;
+}
+
+.action-card:hover .icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* Pulse animation for icons */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.action-card:hover .icon {
+  animation: pulse 2s infinite;
+} 
