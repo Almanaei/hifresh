@@ -78,6 +78,7 @@ function BookingList() {
       const formData = new FormData();
       formData.append('title', editingBooking.title);
       formData.append('description', editingBooking.description || '');
+      formData.append('address', editingBooking.address || '');
       
       if (editingBooking.booking_date) {
         const bookingDate = new Date(editingBooking.booking_date);
@@ -334,6 +335,18 @@ function BookingList() {
             </div>
 
             <div className="form-group">
+              <label>Address</label>
+              <textarea
+                name="address"
+                value={editingBooking.address || ''}
+                onChange={handleEditChange}
+                className="form-control"
+                rows="3"
+                placeholder="Enter full address..."
+              />
+            </div>
+
+            <div className="form-group">
               <label>Description</label>
               <textarea
                 name="description"
@@ -403,6 +416,12 @@ function BookingList() {
             
             <div className="booking-card-body">
               <p className="description">{booking.description}</p>
+              {booking.address && (
+                <div className="booking-address">
+                  <strong>📍 Address:</strong>
+                  <p>{booking.address}</p>
+                </div>
+              )}
               <div className="booking-meta">
                 <span className="meta-item">
                   {timeOfDay === 'morning' && '🌅'}
@@ -524,10 +543,7 @@ function BookingList() {
                     <option value="cancelled">Cancelled</option>
                   </select>
                 </div>
-              </div>
 
-              {/* Second Column */}
-              <div className="form-column">
                 <div className="form-group">
                   <label>Mobile</label>
                   <input
@@ -547,6 +563,18 @@ function BookingList() {
                     value={editingBooking.email || ''}
                     onChange={handleEditChange}
                     className="form-control dark-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Address</label>
+                  <textarea
+                    name="address"
+                    value={editingBooking.address || ''}
+                    onChange={handleEditChange}
+                    className="form-control dark-input"
+                    rows="3"
+                    placeholder="Enter full address..."
                   />
                 </div>
 
@@ -788,6 +816,10 @@ function BookingList() {
               <div className="detail-group">
                 <label>Description:</label>
                 <p>{viewingBooking.description || 'No description provided'}</p>
+              </div>
+              <div className="detail-group">
+                <label>Address:</label>
+                <p>{viewingBooking.address || 'No address provided'}</p>
               </div>
               <div className="detail-group">
                 <label>Booking Date:</label>

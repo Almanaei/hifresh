@@ -1970,3 +1970,29 @@ input[type="file"] {
   background: rgba(239, 68, 68, 0.2);
   color: #ef4444;
 }
+
+.booking-address {
+  margin: 10px 0;
+  padding: 10px;
+  background-color: var(--background-secondary);
+  border-radius: 4px;
+}
+
+.booking-address strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text-primary);
+}
+
+.booking-address p {
+  margin: 0;
+  white-space: pre-wrap;
+  color: var(--text-secondary);
+}
+
+/* Adjust textarea styling */
+textarea[name="address"] {
+  resize: vertical;
+  min-height: 60px;
+  font-family: inherit;
+}
