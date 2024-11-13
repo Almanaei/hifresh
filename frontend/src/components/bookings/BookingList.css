@@ -1817,42 +1817,53 @@ input[type="file"] {
 .status-filter,
 .sort-select {
   padding: 10px 16px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   font-size: 0.95rem;
-  color: #1e293b;
-  background: white;
+  color: var(--text-primary);
+  background-color: var(--background-primary);
   cursor: pointer;
   transition: all 0.2s ease;
   min-width: 140px;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 16px;
-  padding-right: 36px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  position: relative;
 }
 
-.status-filter:hover,
-.sort-select:hover {
-  border-color: #3b82f6;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+/* Add a custom arrow using pseudo-element */
+.status-filter::after,
+.sort-select::after {
+  content: '▼';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 12px;
+  color: var(--text-primary);
 }
 
-.status-filter:focus,
-.sort-select:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-/* Dark theme for dropdowns */
+/* Dark theme adjustments */
 .dark-theme .status-filter,
 .dark-theme .sort-select {
   background-color: #1e293b;
-  border-color: #334155;
   color: #e2e8f0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394A3B8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  border-color: #334155;
+}
+
+.dark-theme .status-filter::after,
+.dark-theme .sort-select::after {
+  color: #e2e8f0;
+}
+
+/* Hover and focus states */
+.status-filter:hover,
+.sort-select:hover,
+.status-filter:focus,
+.sort-select:focus {
+  border-color: #3b82f6;
+  outline: none;
 }
 
 /* Table Action Buttons */
